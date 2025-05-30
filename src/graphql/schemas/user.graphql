@@ -1,0 +1,24 @@
+type User {
+    id: Int!
+    name: String!
+    email: String!
+}
+
+input GetUserInput {
+    page: Int!
+    limit: Int!
+}
+
+input UpdateUserInput {
+    name: String
+}
+
+type GetUsersResponse {
+    users: [User!]!
+    hashNext: Boolean
+}
+
+type UserMutation {
+    id: Int!
+    update(input: UpdateUserInput): String
+}

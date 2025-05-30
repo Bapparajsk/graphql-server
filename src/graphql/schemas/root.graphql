@@ -1,0 +1,9 @@
+type Query {
+    users(input: GetUserInput): GetUsersResponse
+}
+
+type Mutation {
+    createUser(input: CreateUserInput): User!
+    signIn(input: SignInInput): AuthResponse!
+    user(id: Int!): UserMutation
+}

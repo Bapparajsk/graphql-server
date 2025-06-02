@@ -1,9 +1,9 @@
 import crypto from "node:crypto";
-import * as type from "../graphql/types";
-import prisma from '../lib/prisma';
-import {MutationSignInArgs} from "../graphql/types";
+import * as type from "../types";
+import prisma from '../../lib/prisma';
+import {MutationSignInArgs} from "../types";
 
-type HashPassword = {
+interface HashPassword {
     salt: string;
     hash: string;
 }
@@ -58,9 +58,9 @@ class UserController {
         // Verify the password
         const isPasswordValid = this.#verifyPassword(input.password, data.salt, data.password);
         if (!isPasswordValid) {
-            throw new Error("Invalid password");
+            throw new Error("Invalid email or password");
         }
-        // If the password is valid, return the user data
+        // If the password is valid, return the services data
         return {
             id: data.id,
             email: data.email,
@@ -73,16 +73,17 @@ class UserController {
         return prisma.user.findMany();
     }
 
-    getUsers = ({ page, limit, id }: type.GetUserInput & { id: number }): Promise<type.User[]> => {
+    getUsers = ({ id, page, limit }: type.GetInputs & { id: number }): Promise<type.User[]> => {
         const skip = (page - 1) * limit;
         return prisma.user.findMany({
             where: { id: { not: id,  } },
             skip,
             take: limit,
             orderBy: { id: 'asc' },
-
         });
     }
+
+
 }
 
 export default UserController;

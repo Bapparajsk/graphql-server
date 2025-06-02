@@ -1,9 +1,20 @@
+input GetInputs {
+    page: Int!
+    limit: Int!
+}
+
 type Query {
-    users(input: GetUserInput): GetUsersResponse
+    user(input: GetInputs): GetUsersResponse
+    post(id: Int, input: GetInputs): GetPostResponse
 }
 
 type Mutation {
-    createUser(input: CreateUserInput): User!
+    createUser(input: CreateUserInput): AuthResponse!
     signIn(input: SignInInput): AuthResponse!
+
     user(id: Int!): UserMutation
+    post(id: Int!): PostMutation
+
+#    * create post
+    createPost(input: CreatePostInput): Post!
 }

@@ -1,5 +1,5 @@
 import jwt, { SignOptions, VerifyOptions } from "jsonwebtoken";
-import customError from "../graphql/helper/customError.helper";
+import {customError} from "../helper";
 
 export type Payload = {
     id: number;

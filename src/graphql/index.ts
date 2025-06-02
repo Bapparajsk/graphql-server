@@ -5,9 +5,9 @@ import { gql } from "graphql-tag";
 import { readFileSync, readdirSync } from "fs";
 import path from "path";
 import {resolvers} from "./resolver";
-import UserController from "../user";
-import Jwt from "../lib/JWT";
-import customError from "./helper/customError.helper";
+import Jwt from "./tools/JWT";
+import {ZodValidator} from "./tools/zod";
+import {PostService, UserContext} from "./services";
 
 const router = Router();
 
@@ -26,19 +26,17 @@ async function startApolloServer() {
 
     router.use("/", expressMiddleware(server, {
         context: async ({ req, res }) => {
-            // const token = req.cookies?.authToken || "";
-            // ! Note: this for only development, in production you should use cookies for authentication
-            const token = req.headers.authorization?.replace("Bearer ", "") || "";
-
-            if(!token) { throw customError("BAD_REQUEST") }
-
             return {
-                Controller: {
-                    userController: new UserController(),
-                    jsonWebToken: new Jwt(),
-                    express: { res },
-                    token
+                services : {
+                    user: new UserContext(),
+                    post : new PostService(),
                 },
+                tools : {
+                    jsonWebToken: new Jwt(),
+                    zodValidator: new ZodValidator(),
+                },
+                request: req,
+                response: res,
             };
         },
     }));

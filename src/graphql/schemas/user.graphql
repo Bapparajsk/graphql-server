@@ -4,10 +4,6 @@ type User {
     email: String!
 }
 
-input GetUserInput {
-    page: Int!
-    limit: Int!
-}
 
 input UpdateUserInput {
     name: String

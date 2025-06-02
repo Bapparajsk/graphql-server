@@ -1,12 +1,17 @@
 import { Request, Response } from "express";
-import UserController from '../user';
-import Jwt from "../lib/JWT";
+import {UserContext, PostService} from './services';
+import Jwt from "./tools/JWT";
+import {ZodValidator} from "./tools/zod";
 
 export type Context = {
-    Controller: {
-        userController: UserController;
-        jsonWebToken: Jwt;
-        express: { res: Response },
-        token: string;
+    services : {
+        user: UserContext,
+        post: PostService
+    }
+    tools: {
+        jsonWebToken: Jwt,
+        zodValidator: ZodValidator
     };
+    request: Request;
+    response: Response;
 };

@@ -1,6 +1,9 @@
 import { GraphQLError } from "graphql/error";
+import { ZodError } from "zod/v4";
+import {formatError} from "../tools/zod";
+import { JsonWebTokenError } from "jsonwebtoken";
 
-export type errorCode = "GRAPHQL_PARSE_FAILED" | "GRAPHQL_VALIDATION_FAILED" | "BAD_USER_INPUT" |
+export type errorCode = "GRAPHQL_PARSE_FAILED" | "GRAPHQL_VALIDATION_FAILED" | "BAD_USER_INPUT" | "USER_NOT_FOUND" |
     "PERSISTED_QUERY_NOT_FOUND" | "OPERATION_RESOLUTION_FAILURE" | "BAD_REQUEST" | "INTERNAL_SERVER_ERROR" | "UNAUTHORIZED";
 
 interface ErrorTypes {
@@ -22,7 +25,7 @@ const errorCodes: Record<errorCode, ErrorTypes> = {
     },
     BAD_USER_INPUT: {
         code: "BAD_USER_INPUT",
-        message: "Invalid user input",
+        message: "Invalid services input",
         status: 400,
     },
     PERSISTED_QUERY_NOT_FOUND: {
@@ -49,25 +52,34 @@ const errorCodes: Record<errorCode, ErrorTypes> = {
         code: "UNAUTHORIZED",
         message: "Unauthorized access",
         status: 401,
+    },
+    USER_NOT_FOUND: {
+        code: "USER_NOT_FOUND",
+        message: "User not found",
+        status: 404,
     }
 };
 
 
-const customError = (code : errorCode | ErrorTypes) => {
-    if (code && typeof code === "object" && "code" in code) {
-        const { code: errorCode, message, status } = code as ErrorTypes;
-        if (!errorCodes[errorCode as errorCode]) {
-            throw new Error(`Unknown error code: ${errorCode}`);
-        }
+const customError = (code : errorCode | ErrorTypes, message?: string) => {
+    if(code && typeof code === "object") {
+        return new GraphQLError(message || code.message, {
+            extensions: {
+                code: code.code,
+                http: {
+                    status: code.status,
+                },
+            },
+        });
     }
 
     const errorType = errorCodes[code as errorCode] || {
         code: "INTERNAL_SERVER_ERROR",
-        message: "An unknown error occurred",
+        message:  "An unknown error occurred",
         status: 500,
     };
 
-    return new GraphQLError(errorType.message, {
+    return new GraphQLError( message || errorType.message, {
         extensions: {
             code: errorType.code,
             http: {
@@ -77,4 +89,29 @@ const customError = (code : errorCode | ErrorTypes) => {
     });
 }
 
-export default customError;
+interface ThrowErrors {
+    jwt?: boolean;
+    zod?: boolean;
+}
+
+const customErrors = (e: unknown) => {
+
+    if (e instanceof GraphQLError) {
+        throw e;
+    }
+
+    if (e instanceof JsonWebTokenError) {
+        throw customError("UNAUTHORIZED");
+    }
+
+    if (e instanceof ZodError) {
+        throw customError("BAD_USER_INPUT", formatError(e));
+    }
+
+    throw customError("INTERNAL_SERVER_ERROR");
+}
+
+export {
+    customErrors,
+    customError
+};

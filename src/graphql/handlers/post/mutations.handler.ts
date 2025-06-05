@@ -1,5 +1,5 @@
-import {MutationResolvers} from "@/graphql/types";
 import {customErrors} from "@/graphql/helper";
+import {MutationResolvers} from "@/graphql/types";
 
 
 export const createPost: MutationResolvers["createPost"] = async (parent, { input }, { services, tools }) => {

@@ -1,3 +1,5 @@
+import {isAuthenticated} from "./helper";
+import {Context} from "./context";
 import { Router } from "express";
 import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from '@as-integrations/express5';
@@ -7,9 +9,8 @@ import path from "path";
 import {resolvers} from "./resolver";
 import Jwt from "./tools/JWT";
 import {ZodValidator} from "./tools/zod";
-import {PostService, AuthService, UserService} from "./services";
-import {isAuthenticated} from "./helper";
-import {Context} from "./context";
+import {PostService, AuthService, UserService} from './services';
+
 
 const router = Router();
 
@@ -54,6 +55,6 @@ startApolloServer().then(() => {
     console.log("GraphQL endpoint is available at /graphql");
 }).catch((e) => {
     console.error("Error starting Apollo Server:", e);
-})
+});
 
 export default router

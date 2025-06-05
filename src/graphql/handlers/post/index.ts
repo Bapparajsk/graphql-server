@@ -1,5 +1,5 @@
-import { post } from "./queries.handler";
 import { postMutation, createPost } from "./mutations.handler";
+import { post } from "./queries.handler";
 
 export {
     post,

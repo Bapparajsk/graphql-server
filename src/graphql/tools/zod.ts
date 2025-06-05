@@ -21,7 +21,7 @@ const getInputsSchema = z.object({
 export const postSchema = z.object({
     title: z.string().min(3, "Title is required"),
     content: z.url("Content must be a valid URL"),
-})
+});
 
 const formatError = (error: ZodError<unknown>) =>
     error.issues.map((issue) => issue.message).join(", ");
@@ -71,4 +71,4 @@ class ZodValidator {
 export {
     ZodValidator,
     formatError,
-}
+};

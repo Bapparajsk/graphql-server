@@ -1,5 +1,6 @@
 import * as type from "../types";
-import prisma from '../../lib/prisma';
+
+import prisma from "@/lib/prisma";
 
 class UserController {
 
@@ -20,9 +21,9 @@ class UserController {
             where: { id: { not: id,  } },
             skip,
             take: limit,
-            orderBy: { id: 'asc' },
+            orderBy: { id: "asc" },
         });
-    }
+    };
 
 }
 

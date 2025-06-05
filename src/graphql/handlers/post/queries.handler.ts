@@ -1,5 +1,5 @@
-import {QueryResolvers} from "../../types";
-import {customError, customErrors} from "../../helper";
+import {customError, customErrors} from "@graphql/helper";
+import {QueryResolvers} from "@graphql/types";
 
 export const post: QueryResolvers["post"] = async (_, { id, input }, ctx) => {
     try {
@@ -29,4 +29,4 @@ export const post: QueryResolvers["post"] = async (_, { id, input }, ctx) => {
 
         throw customErrors(e);
     }
-}
+};

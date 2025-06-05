@@ -1,5 +1,7 @@
 import * as type from "../types";
-import prisma from '../../lib/prisma';
+
+import prisma from "@/lib/prisma";
+
 
 class PostService {
     createPost = ({ input, authorId }: type.MutationCreatePostArgs & { authorId : number } ): Promise<type.Post> => {
@@ -12,7 +14,7 @@ class PostService {
                 authorId
             }
         });
-    }
+    };
 
     getPosts = ({ id, limit, page }: type.GetInputs & { id?: number }): Promise<type.Post[]> => {
         const skip = (page - 1) * limit;
@@ -20,7 +22,7 @@ class PostService {
             return prisma.post.findMany({
                 skip,
                 take: limit,
-                orderBy: { createdAt: 'desc' },
+                orderBy: { createdAt: "desc" },
                 include: { author: true }
             });
         }
@@ -29,16 +31,16 @@ class PostService {
             where: { authorId: id },
             skip,
             take: limit,
-            orderBy: { createdAt: 'desc' },
+            orderBy: { createdAt: "desc" },
             include: { author: true }
         });
-    }
+    };
 
     getPostById = (id: number): Promise<type.Post | null> => {
         return prisma.post.findUnique({
             where: { id },
         });
-    }
+    };
 
     isMyPost = async (userId: number, postId: number): Promise<type.Post> => {
         const post = await prisma.post.findUnique({
@@ -55,7 +57,7 @@ class PostService {
         }
 
         return post;
-    }
+    };
 }
 
 export default PostService;

@@ -3,4 +3,4 @@ import { user } from "./queries.handler";
 
 export {
     user
-}
+};

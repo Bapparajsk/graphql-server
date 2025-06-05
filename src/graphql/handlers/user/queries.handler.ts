@@ -1,7 +1,7 @@
-import {ZodError} from "zod/v4";
+import {customError} from "@graphql/helper";
+import {QueryResolvers} from "@graphql/types";
 import {JsonWebTokenError} from "jsonwebtoken";
-import {QueryResolvers} from "../../types";
-import {customError} from "../../helper";
+import {ZodError} from "zod/v4";
 
 export const user: QueryResolvers["user"] = async (_, { input }, { services, tools }) => {
     try {
@@ -29,4 +29,4 @@ export const user: QueryResolvers["user"] = async (_, { input }, { services, too
 
         throw customError("INTERNAL_SERVER_ERROR");
     }
-}
+};

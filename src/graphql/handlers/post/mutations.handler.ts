@@ -5,7 +5,7 @@ import {MutationResolvers} from "@/graphql/types";
 export const createPost: MutationResolvers["createPost"] = async (parent, { input }, { services, tools }) => {
     try {
         const author = await tools.isAuthenticated();
-        const isValidInput = tools.zodValidator.isValidCreatePost(input)
+        const isValidInput = tools.zodValidator.isValidCreatePost(input);
 
         const post = await services.post.createPost({ input: isValidInput, authorId: author.id });
         return {...post, author};
@@ -14,7 +14,7 @@ export const createPost: MutationResolvers["createPost"] = async (parent, { inpu
         console.log("Error in createPost:", e);
         throw customErrors(e);
     }
-}
+};
 
 export const postMutation: MutationResolvers["post"] = async (_, {id}, { services, tools }) => {
     try {
@@ -29,4 +29,4 @@ export const postMutation: MutationResolvers["post"] = async (_, {id}, { service
             { code: "FORBIDDEN", message: "You are not authorized to manipulate this post", status: 403 }
         ]);
     }
-}
+};

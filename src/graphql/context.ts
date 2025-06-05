@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
-import {UserService, PostService, AuthService} from './services';
+
+import {UserService, PostService, AuthService} from "./services";
 import Jwt from "./tools/JWT";
 import {ZodValidator} from "./tools/zod";
 import {User} from "./types";

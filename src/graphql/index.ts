@@ -1,15 +1,17 @@
-import {isAuthenticated} from "./helper";
-import {Context} from "./context";
-import { Router } from "express";
-import { ApolloServer } from "@apollo/server";
-import { expressMiddleware } from '@as-integrations/express5';
-import { gql } from "graphql-tag";
 import { readFileSync, readdirSync } from "fs";
 import path from "path";
+
+import { ApolloServer } from "@apollo/server";
+import { expressMiddleware } from "@as-integrations/express5";
+import { Router } from "express";
+import { gql } from "graphql-tag";
+
+import {Context} from "./context";
+import {isAuthenticated} from "./helper";
 import {resolvers} from "./resolver";
+import {PostService, AuthService, UserService} from "./services";
 import Jwt from "./tools/JWT";
 import {ZodValidator} from "./tools/zod";
-import {PostService, AuthService, UserService} from './services';
 
 
 const router = Router();
@@ -57,4 +59,4 @@ startApolloServer().then(() => {
     console.error("Error starting Apollo Server:", e);
 });
 
-export default router
+export default router;

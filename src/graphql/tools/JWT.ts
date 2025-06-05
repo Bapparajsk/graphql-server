@@ -1,4 +1,5 @@
 import jwt, { SignOptions, VerifyOptions } from "jsonwebtoken";
+
 import {customError} from "../helper";
 
 export type Payload = {

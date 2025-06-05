@@ -1,7 +1,9 @@
-import {MutationResolvers} from "../types";
-import {singCookie} from "../../lib/cookies";
-import {customErrors, customError} from "../helper";
 import { PrismaClientKnownRequestError } from "../../../generated/prisma/runtime/library";
+import {customErrors, customError} from "../helper";
+import {MutationResolvers} from "../types";
+
+import {singCookie} from "@/lib/cookies";
+
 
 export const createUser: MutationResolvers["createUser"] = async (_, { input }, {services, tools, response}) => {
     try {
@@ -26,9 +28,9 @@ export const createUser: MutationResolvers["createUser"] = async (_, { input }, 
         }
         throw customErrors(e);
     }
-}
+};
 
-export const signIn: MutationResolvers["signIn"] = async (_: {}, { input }, {services, tools, response}) => {
+export const signIn: MutationResolvers["signIn"] = async (_, { input }, {services, tools, response}) => {
     try {
         // * Validate inputs using Zod schema
         const inputData = tools.zodValidator.isAuth(input);
@@ -46,9 +48,9 @@ export const signIn: MutationResolvers["signIn"] = async (_: {}, { input }, {ser
         console.log("Error in signIn:", e);
 
         if(e instanceof Error) {
-            throw customError("BAD_USER_INPUT", e.message)
+            throw customError("BAD_USER_INPUT", e.message);
         }
 
         throw customErrors(e);
     }
-}
+};

@@ -1,5 +1,5 @@
-import express from "express";
 import cors from "cors";
+import express from "express";
 
 import ql_router from "./graphql/index";
 
@@ -14,7 +14,7 @@ app.use("/graphql", ql_router);
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
     console.log(`GraphQL endpoint is available at http://localhost:${PORT}/graphql`);
-})
+});
 
 
 

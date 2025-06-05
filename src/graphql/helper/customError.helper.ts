@@ -1,7 +1,9 @@
 import { GraphQLError } from "graphql/error";
-import { ZodError } from "zod/v4";
-import {formatError} from "../tools/zod";
 import { JsonWebTokenError } from "jsonwebtoken";
+import { ZodError } from "zod/v4";
+
+import {formatError} from "../tools/zod";
+
 
 export type errorCode = "GRAPHQL_PARSE_FAILED" | "GRAPHQL_VALIDATION_FAILED" | "BAD_USER_INPUT" | "USER_NOT_FOUND" |
     "PERSISTED_QUERY_NOT_FOUND" | "OPERATION_RESOLUTION_FAILURE" | "BAD_REQUEST" | "INTERNAL_SERVER_ERROR" | "UNAUTHORIZED";
@@ -87,7 +89,7 @@ const customError = (code : errorCode | ErrorTypes, message?: string) => {
             },
         },
     });
-}
+};
 
 
 const customErrors = (e: unknown, eList: ErrorTypes[] = []) => {
@@ -113,7 +115,7 @@ const customErrors = (e: unknown, eList: ErrorTypes[] = []) => {
     }
 
     throw customError("INTERNAL_SERVER_ERROR");
-}
+};
 
 export {
     customErrors,

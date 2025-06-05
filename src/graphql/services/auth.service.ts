@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import { promisify } from "util";
+
 import prisma from "../../lib/prisma";
 import { MutationCreateUserArgs, MutationSignInArgs } from "../types";
 
@@ -25,17 +26,17 @@ class AuthService {
     }
 
     async #hashPassword(password: string): Promise<HashPassword> {
-        const salt = crypto.randomBytes(16).toString('hex');
+        const salt = crypto.randomBytes(16).toString("hex");
         const derivedKey = await this.pbkdf2(password, salt, config.iterations, config.keylen, config.digest);
         return {
             salt,
-            hash: derivedKey.toString('hex'),
+            hash: derivedKey.toString("hex"),
         };
     }
 
     async #verifyPassword(password: string, salt: string, hash: string): Promise<boolean> {
         const derivedKey = await this.pbkdf2(password, salt, config.iterations, config.keylen, config.digest);
-        return derivedKey.toString('hex') === hash;
+        return derivedKey.toString("hex") === hash;
     }
 
     async createUser({ input }: MutationCreateUserArgs) {

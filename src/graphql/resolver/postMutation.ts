@@ -1,22 +1,22 @@
-import { Resolvers } from "../types";
-import prisma from "../../lib/prisma";
 import {customErrors} from "../helper";
+import { Resolvers } from "../types";
+
+import prisma from "@/lib/prisma";
 
 export const PostMutation: Resolvers["PostMutation"] = {
-    updatePost: async ({ post, user }, { input }, { tools }) => {
+    updatePost: async ({ post }, { input }, { tools }) => {
         try {
-
             const isValidInput = tools.zodValidator.isValidUpdatePost(input);
 
             return await prisma.post.update({
                 where: {id: post.id},
                 data: {
-                    title: input.title,
-                    content: input.content,
+                    title: isValidInput.title,
+                    content: isValidInput.content,
                 },
             });
         } catch (e) {
             throw customErrors(e);
         }
     }
-}
+};

@@ -1,18 +1,17 @@
 import {ZodError} from "zod/v4";
 import {JsonWebTokenError} from "jsonwebtoken";
-import {customError, isAuthenticated} from "../helper";
-import {QueryResolvers} from "../types";
+import {QueryResolvers} from "../../types";
+import {customError} from "../../helper";
 
-
-export const user: QueryResolvers["user"] = async (_, { input }, ctx) => {
+export const user: QueryResolvers["user"] = async (_, { input }, { services, tools }) => {
     try {
         // Ensure the services is authenticated
-        const user = await isAuthenticated(ctx);
+        const user = await tools.isAuthenticated();
 
         // Validate the input using the getInputsSchema
-        const { limit, page } = ctx.tools.zodValidator.isGetInputs(input);
+        const { limit, page } = tools.zodValidator.isGetInputs(input);
 
-        const users =  await ctx.services.user.getUsers({limit, page, id: user.id});
+        const users =  await services.user.getUsers({limit, page, id: user.id});
         const hasNextPage = users.length === input.limit;
 
         return { users, hashNext: hasNextPage };

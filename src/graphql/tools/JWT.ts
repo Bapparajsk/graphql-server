@@ -3,7 +3,7 @@ import {customError} from "../helper";
 
 export type Payload = {
     id: number;
-    email: string;
+    email?: string;
     name?: string;
 };
 

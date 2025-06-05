@@ -97,7 +97,9 @@ export type PostMutation = {
   __typename?: 'PostMutation';
   deletePost?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['Int']['output'];
+  post: Post;
   updatePost?: Maybe<Post>;
+  user: User;
 };
 
 
@@ -128,9 +130,7 @@ export type SignInInput = {
 };
 
 export type UpdatePostInput = {
-  comment?: InputMaybe<Scalars['String']['input']>;
-  like?: InputMaybe<Scalars['Boolean']['input']>;
-  share?: InputMaybe<Scalars['Boolean']['input']>;
+  content?: InputMaybe<Scalars['String']['input']>;
   title?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -306,7 +306,9 @@ export type PostResolvers<ContextType = Context, ParentType extends ResolversPar
 export type PostMutationResolvers<ContextType = Context, ParentType extends ResolversParentTypes['PostMutation'] = ResolversParentTypes['PostMutation']> = {
   deletePost?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  post?: Resolver<ResolversTypes['Post'], ParentType, ContextType>;
   updatePost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, Partial<PostMutationUpdatePostArgs>>;
+  user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 

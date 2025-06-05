@@ -17,13 +17,13 @@ type GetPostResponse {
 
 input UpdatePostInput {
     title: String
-    like: Boolean
-    share: Boolean
-    comment: String
+    content: String
 }
 
 type PostMutation {
     id: Int!
+    post: Post!
+    user: User!
     updatePost(input: UpdatePostInput): Post
     deletePost: Boolean
 }

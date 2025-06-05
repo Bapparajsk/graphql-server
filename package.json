@@ -5,23 +5,23 @@
   "main": "index.js",
   "scripts": {
     "compile": "tsc",
-    "dev": "concurrently \"ts-node-dev --respawn --watch ./**/*.graphql ./src/app.ts\" \"npm run generate\"",
+    "dev": "concurrently \"ts-node-dev -r tsconfig-paths/register --respawn --watch ./**/*.graphql ./src/app.ts\" \"npm run generate\"",
     "start": "npm run compile && nodemon ./dist/index.js",
     "test": "jest",
     "generate": "graphql-codegen --watch"
   },
   "dependencies": {
     "@apollo/datasource-rest": "^6.4.1",
-    "@apollo/server": "^4.12.1",
+    "@apollo/server": "^4.12.2",
     "@as-integrations/express5": "^1.0.0",
     "@graphql-codegen/cli": "^5.0.6",
-    "@parcel/watcher": "^2.4.0",
-    "@prisma/client": "^6.8.2",
+    "@parcel/watcher": "^2.5.1",
+    "@prisma/client": "^6.9.0",
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "graphql": "^16.11.0",
     "jsonwebtoken": "^9.0.2",
-    "zod": "^3.25.30"
+    "zod": "^3.25.51"
   },
   "devDependencies": {
     "@graphql-codegen/typescript": "^4.1.6",
@@ -33,11 +33,12 @@
     "concurrently": "^8.2.2",
     "jest": "^29.0.3",
     "nodemon": "^3.0.0",
-    "prisma": "^6.8.2",
+    "prisma": "^6.9.0",
     "ts-jest": "^29.0.2",
-    "ts-node": "^10.9.1",
+    "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
-    "typescript": "^5.0.0"
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.8.3"
   },
   "keywords": [],
   "author": "",

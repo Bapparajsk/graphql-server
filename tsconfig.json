@@ -18,7 +18,9 @@
     "types": ["node", "jest"],
     "baseUrl": ".",
     "paths": {
-      "*": ["types/*"]
+      "*": ["types/*"],
+      "@/*": ["src/*"],
+      "@graphql/*": ["src/graphql/*"],
     },
     "typeRoots": ["node_modules/@types", "src/@types"],
   },

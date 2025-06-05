@@ -1,8 +1,7 @@
 import { Context } from "../context";
 import {User} from "../types";
-import { customError } from "../helper/customError.helper";
 
-export const isAuthenticated = async (context: Context): Promise<User> => {
+export async function isAuthenticated  (context: Context): Promise<User>{
     const { services, tools, request } = context;
 
     // const token = req.cookies?.authToken || "";

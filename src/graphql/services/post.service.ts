@@ -33,6 +33,29 @@ class PostService {
             include: { author: true }
         });
     }
+
+    getPostById = (id: number): Promise<type.Post | null> => {
+        return prisma.post.findUnique({
+            where: { id },
+        });
+    }
+
+    isMyPost = async (userId: number, postId: number): Promise<type.Post> => {
+        const post = await prisma.post.findUnique({
+            where: { id: postId },
+            // include: { author: true}
+        });
+
+        if (!post) {
+            throw new Error("NOT_FOUND");
+        }
+
+        if (post.authorId !== userId) {
+            throw new Error("FORBIDDEN");
+        }
+
+        return post;
+    }
 }
 
 export default PostService;

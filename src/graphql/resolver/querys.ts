@@ -1,6 +1,6 @@
 import {Resolvers} from "../types";
-import {user} from "../handlers/user.handlers";
-import {post} from "../handlers/post.handlers";
+import {user} from "../handlers/user";
+import {post} from "../handlers/post";
 
 export const Query: Resolvers["Query"] = {
     user,

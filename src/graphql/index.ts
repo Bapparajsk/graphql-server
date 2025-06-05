@@ -7,7 +7,9 @@ import path from "path";
 import {resolvers} from "./resolver";
 import Jwt from "./tools/JWT";
 import {ZodValidator} from "./tools/zod";
-import {PostService, UserContext} from "./services";
+import {PostService, AuthService, UserService} from "./services";
+import {isAuthenticated} from "./helper";
+import {Context} from "./context";
 
 const router = Router();
 
@@ -26,18 +28,23 @@ async function startApolloServer() {
 
     router.use("/", expressMiddleware(server, {
         context: async ({ req, res }) => {
-            return {
-                services : {
-                    user: new UserContext(),
-                    post : new PostService(),
+
+            const ctx = {
+                services: {
+                    auth: new AuthService(),
+                    user: new UserService(),
+                    post: new PostService(),
                 },
-                tools : {
+                tools: {
                     jsonWebToken: new Jwt(),
                     zodValidator: new ZodValidator(),
-                },
+                    isAuthenticated: () => isAuthenticated(ctx as Context), // ✅ closure
+                } ,
                 request: req,
                 response: res,
-            };
+            } as Partial<Context>;
+
+            return ctx as Context;
         },
     }));
 }

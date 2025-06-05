@@ -89,15 +89,19 @@ const customError = (code : errorCode | ErrorTypes, message?: string) => {
     });
 }
 
-interface ThrowErrors {
-    jwt?: boolean;
-    zod?: boolean;
-}
 
-const customErrors = (e: unknown) => {
+const customErrors = (e: unknown, eList: ErrorTypes[] = []) => {
 
     if (e instanceof GraphQLError) {
         throw e;
+    }
+
+    // Match errors with custom error list
+    if (e instanceof Error) {
+        const matchedError = eList.find(err => err.code === e.message);
+        if (matchedError) {
+            throw customError(matchedError);
+        }
     }
 
     if (e instanceof JsonWebTokenError) {

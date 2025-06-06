@@ -5,7 +5,8 @@ input GetInputs {
 
 type Query {
     user(input: GetInputs): GetUsersResponse
-    post(id: Int, input: GetInputs): GetPostResponse
+    postAll(userId: Int, input: GetInputs): GetPostAllResponse
+    post(postId: Int!): GetPostResponse
 }
 
 type Mutation {

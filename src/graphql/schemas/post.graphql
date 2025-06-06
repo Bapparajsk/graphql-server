@@ -3,6 +3,7 @@ type Post {
     title: String!
     content: String!
     author: User
+    createdAt: String!
 }
 
 input CreatePostInput {
@@ -10,9 +11,19 @@ input CreatePostInput {
     content: String!
 }
 
-type GetPostResponse {
+type GetPostAllResponse {
     posts: [Post!]!
     hashNext: Boolean
+}
+
+type GetCommentsResponse {
+    comments: [Comment!]!
+    hashNext: Boolean
+}
+
+type GetPostResponse {
+    post: Post!
+    comments(input: GetInputs): GetCommentsResponse
 }
 
 input UpdatePostInput {
@@ -20,9 +31,22 @@ input UpdatePostInput {
     content: String
 }
 
+type Comment {
+    id: Int!
+    comment: String!
+    postId: Int!
+    author: User!
+    createdAt: String!
+    updatedAt: String!
+}
+
 type PostMutation {
     id: Int!
     user: User!
+#    can do this only author
     updatePost(input: UpdatePostInput): Post
     deletePost: Boolean
+
+#    this can do by any user
+    addComment(comment: String!): Comment
 }

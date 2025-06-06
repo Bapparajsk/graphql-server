@@ -1,22 +1,25 @@
 import {customError, customErrors} from "@graphql/helper";
 import {QueryResolvers} from "@graphql/types";
 
-export const post: QueryResolvers["post"] = async (_, { id, input }, ctx) => {
+export const postAll: QueryResolvers["postAll"] = async (_, { userId, input }, { services, tools }) => {
     try {
-        await ctx.tools.isAuthenticated(); // ! Ensure the services is authenticated
+        await tools.isAuthenticated();
 
-        if(id) {
-            ctx.tools.zodValidator.isId({ id });
-            const user = await ctx.services.user.getUserById(id);
+        if(userId) {
+            const validId = tools.zodValidator.isId({ id: userId });
+            const user = await services.user.getUserById(validId.id);
             if(!user) {
                 throw new Error("User not found");
             }
         }
 
         // Validate the input using the getInputsSchema
-        const validInput = ctx.tools.zodValidator.isGetInputs(input);
+        const validInput = tools.zodValidator.isGetInputs(input);
 
-        const posts = await ctx.services.post.getPosts({...validInput, id });
+        const posts = await services.post.getPosts({
+            input: validInput,
+            userId: userId
+        });
         const hasNextPage = posts.length === input.limit;
 
         return { posts, hashNext: hasNextPage };
@@ -30,3 +33,35 @@ export const post: QueryResolvers["post"] = async (_, { id, input }, ctx) => {
         throw customErrors(e);
     }
 };
+
+// export const post: QueryResolvers["post"] = async (parent, { postId }, { services, tools }) => {
+//     try {
+//         await tools.isAuthenticated();
+//         const post = await services.post.getPostById(postId);
+//
+//         return post;
+//     } catch (e) {
+//         throw customErrors(e, [{
+//             code: "NOT_FOUND",
+//             message: "Post not found",
+//             status: 404
+//         }]);
+//     }
+// };
+
+// export const comment: QueryResolvers["comment"] = async (parent, { postId, input }, { services, tools }) => {
+//     try {
+//         await tools.isAuthenticated();
+//         const validId = tools.zodValidator.isId({ id: postId });
+//         const validInput = tools.zodValidator.isGetInputs(input);
+//
+//         const comments = await services.post.getCommentById({
+//             input: validInput,
+//             postId: validId.id
+//         });
+//
+//         return comments || [];
+//     } catch (e) {
+//         throw customErrors(e);
+//     }
+// };

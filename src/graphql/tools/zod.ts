@@ -69,6 +69,12 @@ class ZodValidator {
             { message: "At least one field (title or content) must be provided." }
         ).parse(input);
     }
+
+    isValidComment(comment: string) {
+        return z.object({
+            comment: z.string().min(1, "Comment content is required")
+        }).parse({comment});
+    }
 }
 
 export {

@@ -1,6 +1,5 @@
 import {customErrors} from "@/graphql/helper";
 import {MutationResolvers, PostMutationResolvers} from "@/graphql/types";
-import prisma from "@/lib/prisma";
 import {filterValidFields} from "@/lib/filter";
 
 
@@ -59,5 +58,19 @@ export const deletePost: PostMutationResolvers["deletePost"] = async ({ id, user
         throw customErrors(e,[
             { code: "FORBIDDEN", message: "You are not authorized to manipulate this post", status: 403 }
         ]);
+    }
+};
+
+export const addComment: PostMutationResolvers["addComment"] = async ({ id, user }, { comment }, { services, tools }) => {
+    try {
+        const validComment = tools.zodValidator.isValidComment(comment);
+        return await services.post.addComment({
+            postId: id,
+            user,
+            comment: validComment.comment
+        });
+    } catch (e) {
+        console.log("Error in addComment:", e);
+        throw customErrors(e);
     }
 };

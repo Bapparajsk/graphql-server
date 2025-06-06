@@ -1,45 +1,48 @@
 import * as type from "../types";
 
 import prisma from "@/lib/prisma";
+import {transformComment, transformPost} from "@/lib/transformers";
 
 
 class PostService {
-    createPost = ({ input, authorId }: type.MutationCreatePostArgs & { authorId : number } ): Promise<type.Post> => {
+    createPost = async ({ input, authorId }: type.MutationCreatePostArgs & { authorId : number } ): Promise<type.Post> => {
         const { title, content } = input;
 
-        return prisma.post.create({
+        const post = await prisma.post.create({
             data: {
                 title,
                 content,
                 authorId
             }
         });
+
+        return transformPost(post);
     };
 
-    getPosts = ({ id, limit, page }: type.GetInputs & { id?: number }): Promise<type.Post[]> => {
-        const skip = (page - 1) * limit;
-        if( !id ) {
-            return prisma.post.findMany({
-                skip,
-                take: limit,
-                orderBy: { createdAt: "desc" },
-                include: { author: true }
-            });
+    getPosts = async ({ input, userId }: type.QueryPostAllArgs & { id?: number }): Promise<type.Post[]> => {
+        const skip = (input.page - 1) * input.limit;
+        const posts = await prisma.post.findMany({
+            where: userId ? { authorId: userId } : undefined,
+            skip,
+            take: input.limit,
+            orderBy: { createdAt: "desc" },
+            include: { author: true, },
+        });
+
+        return posts.map(transformPost);
+    };
+
+    getPostById = async (id: number): Promise<type.Post> => {
+        const post = await prisma.post.findUnique({
+            where: { id },
+            include: { author: true },
+        });
+
+        if (!post) {
+            throw new Error("NOT_FOUND");
         }
 
-        return prisma.post.findMany({
-            where: { authorId: id },
-            skip,
-            take: limit,
-            orderBy: { createdAt: "desc" },
-            include: { author: true }
-        });
-    };
-
-    getPostById = (id: number): Promise<type.Post | null> => {
-        return prisma.post.findUnique({
-            where: { id },
-        });
+        return transformPost(post);
     };
 
     isMyPost = async (userId: number, postId: number): Promise<type.Post> => {
@@ -56,19 +59,30 @@ class PostService {
             throw new Error("FORBIDDEN");
         }
 
-        return post;
+        return transformPost(post);
     };
 
     // Updates post
     updatePost = async ({ input, postId } : type.PostMutationUpdatePostArgs & { postId: number } ): Promise<type.Post> => {
-        return prisma.post.update({
-            where: {id: postId},
-            data: input,
-        });
+        const post = await prisma.post.update({ where: {id: postId}, data: input, });
+        return transformPost(post);
     };
 
-    deletePost = (postId: number): Promise<type.Post> => {
-        return prisma.post.delete({ where: { id: postId }, });
+    deletePost = async (postId: number): Promise<type.Post> => {
+        const post = await  prisma.post.delete({ where: { id: postId }, });
+        return transformPost(post);
+    };
+
+    addComment = async ({ postId, user, comment }: { postId: number, user: type.User, comment: string }): Promise<type.Comment> => {
+        const com = await prisma.comment.create({
+            data: {
+                comment,
+                postId,
+                authorId: user.id,
+            },
+        });
+
+        return transformComment(com, user);
     };
 }
 

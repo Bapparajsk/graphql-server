@@ -6,7 +6,6 @@ import {Query} from "./querys";
 
 import {maskEmail} from "@/lib/transformers";
 
-
 export const resolvers: Resolvers = {
     Query,
     Mutation,

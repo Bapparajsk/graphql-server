@@ -23,6 +23,16 @@ export type AuthResponse = {
   user: User;
 };
 
+export type Comment = {
+  __typename?: 'Comment';
+  author: User;
+  comment: Scalars['String']['output'];
+  createdAt: Scalars['String']['output'];
+  id: Scalars['Int']['output'];
+  postId: Scalars['Int']['output'];
+  updatedAt: Scalars['String']['output'];
+};
+
 export type CreatePostInput = {
   content: Scalars['String']['input'];
   title: Scalars['String']['input'];
@@ -34,15 +44,32 @@ export type CreateUserInput = {
   password: Scalars['String']['input'];
 };
 
+export type GetCommentsResponse = {
+  __typename?: 'GetCommentsResponse';
+  comments: Array<Comment>;
+  hashNext?: Maybe<Scalars['Boolean']['output']>;
+};
+
 export type GetInputs = {
   limit: Scalars['Int']['input'];
   page: Scalars['Int']['input'];
 };
 
-export type GetPostResponse = {
-  __typename?: 'GetPostResponse';
+export type GetPostAllResponse = {
+  __typename?: 'GetPostAllResponse';
   hashNext?: Maybe<Scalars['Boolean']['output']>;
   posts: Array<Post>;
+};
+
+export type GetPostResponse = {
+  __typename?: 'GetPostResponse';
+  comments?: Maybe<GetCommentsResponse>;
+  post: Post;
+};
+
+
+export type GetPostResponseCommentsArgs = {
+  input?: InputMaybe<GetInputs>;
 };
 
 export type GetUsersResponse = {
@@ -89,16 +116,23 @@ export type Post = {
   __typename?: 'Post';
   author?: Maybe<User>;
   content: Scalars['String']['output'];
+  createdAt: Scalars['String']['output'];
   id: Scalars['Int']['output'];
   title: Scalars['String']['output'];
 };
 
 export type PostMutation = {
   __typename?: 'PostMutation';
+  addComment?: Maybe<Comment>;
   deletePost?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['Int']['output'];
   updatePost?: Maybe<Post>;
   user: User;
+};
+
+
+export type PostMutationAddCommentArgs = {
+  comment: Scalars['String']['input'];
 };
 
 
@@ -109,13 +143,19 @@ export type PostMutationUpdatePostArgs = {
 export type Query = {
   __typename?: 'Query';
   post?: Maybe<GetPostResponse>;
+  postAll?: Maybe<GetPostAllResponse>;
   user?: Maybe<GetUsersResponse>;
 };
 
 
 export type QueryPostArgs = {
-  id?: InputMaybe<Scalars['Int']['input']>;
+  postId: Scalars['Int']['input'];
+};
+
+
+export type QueryPostAllArgs = {
   input?: InputMaybe<GetInputs>;
+  userId?: InputMaybe<Scalars['Int']['input']>;
 };
 
 
@@ -228,9 +268,12 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 export type ResolversTypes = {
   AuthResponse: ResolverTypeWrapper<AuthResponse>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
+  Comment: ResolverTypeWrapper<Comment>;
   CreatePostInput: CreatePostInput;
   CreateUserInput: CreateUserInput;
+  GetCommentsResponse: ResolverTypeWrapper<GetCommentsResponse>;
   GetInputs: GetInputs;
+  GetPostAllResponse: ResolverTypeWrapper<GetPostAllResponse>;
   GetPostResponse: ResolverTypeWrapper<GetPostResponse>;
   GetUsersResponse: ResolverTypeWrapper<GetUsersResponse>;
   Int: ResolverTypeWrapper<Scalars['Int']['output']>;
@@ -250,9 +293,12 @@ export type ResolversTypes = {
 export type ResolversParentTypes = {
   AuthResponse: AuthResponse;
   Boolean: Scalars['Boolean']['output'];
+  Comment: Comment;
   CreatePostInput: CreatePostInput;
   CreateUserInput: CreateUserInput;
+  GetCommentsResponse: GetCommentsResponse;
   GetInputs: GetInputs;
+  GetPostAllResponse: GetPostAllResponse;
   GetPostResponse: GetPostResponse;
   GetUsersResponse: GetUsersResponse;
   Int: Scalars['Int']['output'];
@@ -274,9 +320,31 @@ export type AuthResponseResolvers<ContextType = Context, ParentType extends Reso
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type GetPostResponseResolvers<ContextType = Context, ParentType extends ResolversParentTypes['GetPostResponse'] = ResolversParentTypes['GetPostResponse']> = {
+export type CommentResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Comment'] = ResolversParentTypes['Comment']> = {
+  author?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  comment?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  createdAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  postId?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  updatedAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type GetCommentsResponseResolvers<ContextType = Context, ParentType extends ResolversParentTypes['GetCommentsResponse'] = ResolversParentTypes['GetCommentsResponse']> = {
+  comments?: Resolver<Array<ResolversTypes['Comment']>, ParentType, ContextType>;
+  hashNext?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type GetPostAllResponseResolvers<ContextType = Context, ParentType extends ResolversParentTypes['GetPostAllResponse'] = ResolversParentTypes['GetPostAllResponse']> = {
   hashNext?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   posts?: Resolver<Array<ResolversTypes['Post']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type GetPostResponseResolvers<ContextType = Context, ParentType extends ResolversParentTypes['GetPostResponse'] = ResolversParentTypes['GetPostResponse']> = {
+  comments?: Resolver<Maybe<ResolversTypes['GetCommentsResponse']>, ParentType, ContextType, Partial<GetPostResponseCommentsArgs>>;
+  post?: Resolver<ResolversTypes['Post'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -297,12 +365,14 @@ export type MutationResolvers<ContextType = Context, ParentType extends Resolver
 export type PostResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Post'] = ResolversParentTypes['Post']> = {
   author?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   content?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  createdAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type PostMutationResolvers<ContextType = Context, ParentType extends ResolversParentTypes['PostMutation'] = ResolversParentTypes['PostMutation']> = {
+  addComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<PostMutationAddCommentArgs, 'comment'>>;
   deletePost?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   updatePost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, Partial<PostMutationUpdatePostArgs>>;
@@ -311,7 +381,8 @@ export type PostMutationResolvers<ContextType = Context, ParentType extends Reso
 };
 
 export type QueryResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
-  post?: Resolver<Maybe<ResolversTypes['GetPostResponse']>, ParentType, ContextType, Partial<QueryPostArgs>>;
+  post?: Resolver<Maybe<ResolversTypes['GetPostResponse']>, ParentType, ContextType, RequireFields<QueryPostArgs, 'postId'>>;
+  postAll?: Resolver<Maybe<ResolversTypes['GetPostAllResponse']>, ParentType, ContextType, Partial<QueryPostAllArgs>>;
   user?: Resolver<Maybe<ResolversTypes['GetUsersResponse']>, ParentType, ContextType, Partial<QueryUserArgs>>;
 };
 
@@ -330,6 +401,9 @@ export type UserMutationResolvers<ContextType = Context, ParentType extends Reso
 
 export type Resolvers<ContextType = Context> = {
   AuthResponse?: AuthResponseResolvers<ContextType>;
+  Comment?: CommentResolvers<ContextType>;
+  GetCommentsResponse?: GetCommentsResponseResolvers<ContextType>;
+  GetPostAllResponse?: GetPostAllResponseResolvers<ContextType>;
   GetPostResponse?: GetPostResponseResolvers<ContextType>;
   GetUsersResponse?: GetUsersResponseResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;

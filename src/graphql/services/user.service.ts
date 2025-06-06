@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma";
 
 class UserController {
 
-    getUserById(id: number): Promise<type.User | null> {
+    getUserById(id: number): Promise<type.User> {
         return prisma.user.findUnique({
             where: { id }
         });

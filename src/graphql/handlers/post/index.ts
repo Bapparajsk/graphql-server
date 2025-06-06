@@ -1,9 +1,10 @@
-import { postMutation, createPost, updatePost, deletePost } from "./mutations.handler";
-import { post } from "./queries.handler";
+import { postMutation, createPost, updatePost, deletePost, addComment } from "./mutations.handler";
+import { postAll } from "./queries.handler";
 
 export {
-    post,
+    postAll,
     postMutation,
     createPost,
-    updatePost, deletePost
+    updatePost, deletePost,
+    addComment
 };

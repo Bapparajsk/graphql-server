@@ -25,5 +25,4 @@ type PostMutation {
     post: Post!
     user: User!
     updatePost(input: UpdatePostInput): Post
-    deletePost: Boolean
 }

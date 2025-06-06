@@ -64,7 +64,10 @@ class ZodValidator {
     }
 
     isValidUpdatePost(input: InputData) {
-        return this.isValidCreatePost(input);
+        return postSchema.partial().refine(
+            (data) => data.title !== undefined || data.content !== undefined,
+            { message: "At least one field (title or content) must be provided." }
+        ).parse(input);
     }
 }
 

@@ -58,6 +58,14 @@ class PostService {
 
         return post;
     };
+
+    // Updates post
+    updatePost = async ({ input, postId } : type.PostMutationUpdatePostArgs & { postId: number } ): Promise<type.Post> => {
+        return prisma.post.update({
+            where: {id: postId},
+            data: input,
+        });
+    };
 }
 
 export default PostService;

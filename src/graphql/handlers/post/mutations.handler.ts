@@ -1,5 +1,7 @@
 import {customErrors} from "@/graphql/helper";
-import {MutationResolvers} from "@/graphql/types";
+import {MutationResolvers, PostMutationResolvers} from "@/graphql/types";
+import prisma from "@/lib/prisma";
+import {filterValidFields} from "@/lib/filter";
 
 
 export const createPost: MutationResolvers["createPost"] = async (parent, { input }, { services, tools }) => {
@@ -27,6 +29,24 @@ export const postMutation: MutationResolvers["post"] = async (_, {id}, { service
         throw customErrors(e, [
             { code: "NOT_FOUND", message: "Post not found", status: 404 },
             { code: "FORBIDDEN", message: "You are not authorized to manipulate this post", status: 403 }
+        ]);
+    }
+};
+
+export const updatePost: PostMutationResolvers["updatePost"] = async ({ post, user }, { input }, { services ,tools }) => {
+    try {
+        const data = filterValidFields(tools.zodValidator.isValidUpdatePost(input));
+
+        const updatedPost = await services.post.updatePost({ input: data, postId: post.id, });
+        return {...updatedPost, author: user};
+    } catch (e) {
+        console.log("Error in updatePost:", e);
+        throw customErrors(e, [
+            {
+                code: "INPUT_ERROR",
+                message: "At least one field (title or content) must be provided for update.",
+                status: 400,
+            }
         ]);
     }
 };

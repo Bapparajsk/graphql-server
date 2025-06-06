@@ -1,7 +1,8 @@
-import {updatePost} from "@graphql/handlers/post/mutations.handler";
+import {updatePost, deletePost} from "@graphql/handlers/post";
 
 import { Resolvers } from "../types";
 
 export const PostMutation: Resolvers["PostMutation"] = {
-    updatePost
+    updatePost,
+    deletePost
 };

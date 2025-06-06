@@ -66,6 +66,10 @@ class PostService {
             data: input,
         });
     };
+
+    deletePost = (postId: number): Promise<type.Post> => {
+        return prisma.post.delete({ where: { id: postId }, });
+    };
 }
 
 export default PostService;

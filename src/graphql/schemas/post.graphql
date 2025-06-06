@@ -22,7 +22,7 @@ input UpdatePostInput {
 
 type PostMutation {
     id: Int!
-    post: Post!
     user: User!
     updatePost(input: UpdatePostInput): Post
+    deletePost: Boolean
 }

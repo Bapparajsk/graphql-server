@@ -1,7 +1,7 @@
-import { addComment, updateComment } from "./mutations.handler";
+import { addComment, updateComment, deleteComment } from "./mutations.handler";
 import { comments } from "./queries.handler";
 
 export {
-    addComment, updateComment,
+    addComment, updateComment, deleteComment,
     comments
 };

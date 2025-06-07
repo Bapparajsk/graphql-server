@@ -50,6 +50,12 @@ class CommentService {
 
         return transformComment(com, user);
     };
+
+    deleteComment = async (commentId: number) => {
+        await prisma.comment.delete({
+            where: { id: commentId },
+        });
+    };
 }
 
 export default CommentService;

@@ -7,7 +7,7 @@ export const postList: QueryResolvers["postList"] = async (_, { userId, input },
         await tools.isAuthenticated();
 
         if(userId) {
-            const validId = tools.zodValidator.isId({ id: userId });
+            const validId = tools.zodValidator.isId(userId);
             const user = await services.user.getUserById(validId.id);
             if(!user) {
                 throw new Error("User not found");

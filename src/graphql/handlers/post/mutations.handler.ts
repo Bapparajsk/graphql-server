@@ -20,7 +20,7 @@ export const createPost: MutationResolvers["createPost"] = async (parent, { inpu
 export const postMutation: MutationResolvers["post"] = async (_, { id }, { services, tools }) => {
     try {
         const user = await tools.isAuthenticated();
-        const validId = tools.zodValidator.isId({ id });
+        const validId = tools.zodValidator.isId(id);
 
         const post = await services.post.getPostById({ postId: validId.id });
         return {postId: post.id, post, user};

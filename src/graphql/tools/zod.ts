@@ -51,8 +51,8 @@ class ZodValidator {
         return authSchema.pick({ email: true, password: true }) .parse(input);
     }
 
-    isId(input: InputData) {
-        return authSchema.pick({id: true}).parse(input);
+    isId(id: number) {
+        return authSchema.pick({id: true}).parse({id});
     }
 
     isGetInputs(input: InputData) {

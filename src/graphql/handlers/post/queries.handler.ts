@@ -1,5 +1,6 @@
 import {customError, customErrors} from "@graphql/helper";
-import {QueryResolvers} from "@graphql/types";
+import {QueryResolvers, Resolvers} from "@graphql/types";
+
 
 export const postAll: QueryResolvers["postAll"] = async (_, { userId, input }, { services, tools }) => {
     try {
@@ -34,6 +35,8 @@ export const postAll: QueryResolvers["postAll"] = async (_, { userId, input }, {
     }
 };
 
+// export
+
 export const post: QueryResolvers["post"] = async (_, { postId }, { services, tools }) => {
     try {
         await tools.isAuthenticated();
@@ -49,19 +52,3 @@ export const post: QueryResolvers["post"] = async (_, { postId }, { services, to
     }
 };
 
-// export const comment: GetPostResponseResolvers["comments"] = async ({post}, { input }, { services, tools }) => {
-//     try {
-//         await tools.isAuthenticated();
-//         const validId = tools.zodValidator.isId({ id: post.id });
-//         const validInput = tools.zodValidator.isGetInputs(input);
-//
-//         // const comments = await services.post.getCommentById({
-//         //     input: validInput,
-//         //     postId: validId.id
-//         // });
-//
-//         return comments || [];
-//     } catch (e) {
-//         throw customErrors(e);
-//     }
-// };

@@ -1,3 +1,5 @@
+import {comments} from "@graphql/handlers/comment";
+
 import {Resolvers} from "../types";
 
 import {Mutation} from "./mutations";
@@ -10,5 +12,9 @@ export const resolvers: Resolvers = {
     Query,
     Mutation,
     PostMutation,
+
     User: { email: (parent) => maskEmail(parent.email) },
+    GetPostResponse: {
+        comments
+    }
 };

@@ -17,6 +17,19 @@ class CommentService {
         return comment;
     };
 
+    getComments = async ({ postId , input }: type.GetPostResponseCommentsArgs & { postId: number }): Promise<type.Comment[]> => {
+        const skip = (input.page - 1) * input.limit;
+        const comments = await prisma.comment.findMany({
+            where: { postId },
+            skip,
+            take: input.limit,
+            orderBy: { createdAt: "desc" },
+            include: { author: true },
+        });
+
+        return comments.map(comment => transformComment(comment, comment.author));
+    };
+
     addComment = async ({ postId, user, comment }: { postId: number, user: type.User, comment: string }): Promise<type.Comment> => {
         const com = await prisma.comment.create({
             data: {

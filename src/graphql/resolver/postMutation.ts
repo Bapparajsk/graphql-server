@@ -1,3 +1,4 @@
+import {addComment, updateComment} from "@graphql/handlers/comment";
 import {updatePost, deletePost} from "@graphql/handlers/post";
 
 import { Resolvers } from "../types";
@@ -5,5 +6,6 @@ import { Resolvers } from "../types";
 export const PostMutation: Resolvers["PostMutation"] = {
     updatePost,
     deletePost,
-    // addComment,
+    addComment,
+    updateComment
 };

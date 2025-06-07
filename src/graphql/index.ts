@@ -9,7 +9,7 @@ import { gql } from "graphql-tag";
 import {Context} from "./context";
 import {isAuthenticated} from "./helper";
 import {resolvers} from "./resolver";
-import {PostService, AuthService, UserService} from "./services";
+import {PostService, AuthService, UserService, CommentService} from "./services";
 import Jwt from "./tools/JWT";
 import {ZodValidator} from "./tools/zod";
 
@@ -37,6 +37,7 @@ async function startApolloServer() {
                     auth: new AuthService(),
                     user: new UserService(),
                     post: new PostService(),
+                    comment: new CommentService()
                 },
                 tools: {
                     jsonWebToken: new Jwt(),

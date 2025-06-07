@@ -18,7 +18,7 @@ class PostService {
         return transformPost(post);
     };
 
-    getPosts = async ({ input, userId }: type.QueryPostAllArgs & { id?: number }): Promise<type.Post[]> => {
+    getPosts = async ({ input, userId }: type.QueryPostListArgs & { id?: number }): Promise<type.Post[]> => {
         const skip = (input.page - 1) * input.limit;
         const posts = await prisma.post.findMany({
             where: userId ? { authorId: userId } : undefined,

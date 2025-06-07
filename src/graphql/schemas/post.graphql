@@ -11,7 +11,7 @@ input CreatePostInput {
     content: String!
 }
 
-type GetPostAllResponse {
+type PostListResponse {
     posts: [Post!]!
     hashNext: Boolean
 }
@@ -21,7 +21,7 @@ type GetCommentsResponse {
     hashNext: Boolean
 }
 
-type GetPostResponse {
+type PostQuery {
     post: Post!
     comments(input: GetInputs): GetCommentsResponse
 }

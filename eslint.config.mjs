@@ -16,6 +16,7 @@ export default defineConfig([
     },
     rules: {
       semi: "error",
+      "@typescript-eslint/no-explicit-any": "off",
       "quotes": ["error", "double", { avoidEscape: true }],
       "import/order": [
         "error",

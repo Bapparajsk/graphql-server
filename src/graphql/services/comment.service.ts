@@ -17,7 +17,7 @@ class CommentService {
         return comment;
     };
 
-    getComments = async ({ postId , input }: type.GetPostResponseCommentsArgs & { postId: number }): Promise<type.Comment[]> => {
+    getComments = async ({ postId , input }: type.PostQueryCommentsArgs & { postId: number }): Promise<type.Comment[]> => {
         const skip = (input.page - 1) * input.limit;
         const comments = await prisma.comment.findMany({
             where: { postId },

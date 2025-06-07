@@ -1,6 +1,6 @@
-import { GetPostResponseResolvers } from "@/graphql/types";
+import {PostQueryResolvers} from "@/graphql/types";
 
-export const comments: GetPostResponseResolvers["comments"] = async ({ post }, { input }, { services, tools }) => {
+export const comments: PostQueryResolvers["comments"] = async ({ post }, { input }, { services, tools }) => {
     try {
         const valiInput = tools.zodValidator.isGetInputs(input);
         const commentsList = await services.comment.getComments({

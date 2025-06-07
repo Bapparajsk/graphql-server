@@ -1,8 +1,8 @@
 import {customError, customErrors} from "@graphql/helper";
-import {QueryResolvers, Resolvers} from "@graphql/types";
+import {QueryResolvers} from "@graphql/types";
 
 
-export const postAll: QueryResolvers["postAll"] = async (_, { userId, input }, { services, tools }) => {
+export const postList: QueryResolvers["postList"] = async (_, { userId, input }, { services, tools }) => {
     try {
         await tools.isAuthenticated();
 
@@ -37,7 +37,7 @@ export const postAll: QueryResolvers["postAll"] = async (_, { userId, input }, {
 
 // export
 
-export const post: QueryResolvers["post"] = async (_, { postId }, { services, tools }) => {
+export const postQuery: QueryResolvers["post"] = async (_, { postId }, { services, tools }) => {
     try {
         await tools.isAuthenticated();
         const post =  await services.post.getPostById({postId});

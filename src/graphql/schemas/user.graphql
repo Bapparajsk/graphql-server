@@ -4,12 +4,11 @@ type User {
     email: String!
 }
 
-
 input UpdateUserInput {
     name: String
 }
 
-type GetUsersResponse {
+type UsersResponse {
     users: [User!]!
     hashNext: Boolean
 }

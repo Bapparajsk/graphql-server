@@ -1,5 +1,5 @@
 import {customErrors} from "@/graphql/helper";
-import {MutationResolvers, PostMutationResolvers, QueryResolvers} from "@/graphql/types";
+import {MutationResolvers, PostMutationResolvers} from "@/graphql/types";
 import {filterValidFields} from "@/lib/filter";
 
 

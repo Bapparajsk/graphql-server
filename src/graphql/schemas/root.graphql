@@ -4,9 +4,9 @@ input GetInputs {
 }
 
 type Query {
-    user(input: GetInputs): GetUsersResponse
-    postAll(userId: Int, input: GetInputs): GetPostAllResponse
-    post(postId: Int!): GetPostResponse
+    user(input: GetInputs): UsersResponse
+    postList(userId: Int, input: GetInputs): PostListResponse
+    post(postId: Int!): PostQuery
 }
 
 type Mutation {

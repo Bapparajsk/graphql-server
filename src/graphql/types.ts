@@ -46,7 +46,7 @@ export type CreateUserInput = {
 
 export type GetCommentsResponse = {
   __typename?: 'GetCommentsResponse';
-  comments: Array<Comment>;
+  comments?: Maybe<Array<Comment>>;
   hashNext?: Maybe<Scalars['Boolean']['output']>;
 };
 
@@ -124,8 +124,11 @@ export type Post = {
 export type PostMutation = {
   __typename?: 'PostMutation';
   addComment?: Maybe<Comment>;
+  deleteComment?: Maybe<Scalars['Boolean']['output']>;
   deletePost?: Maybe<Scalars['Boolean']['output']>;
-  id: Scalars['Int']['output'];
+  post: Post;
+  postId: Scalars['Int']['output'];
+  updateComment?: Maybe<Comment>;
   updatePost?: Maybe<Post>;
   user: User;
 };
@@ -133,6 +136,17 @@ export type PostMutation = {
 
 export type PostMutationAddCommentArgs = {
   comment: Scalars['String']['input'];
+};
+
+
+export type PostMutationDeleteCommentArgs = {
+  commentId: Scalars['Int']['input'];
+};
+
+
+export type PostMutationUpdateCommentArgs = {
+  comment: Scalars['String']['input'];
+  commentId: Scalars['Int']['input'];
 };
 
 
@@ -331,7 +345,7 @@ export type CommentResolvers<ContextType = Context, ParentType extends Resolvers
 };
 
 export type GetCommentsResponseResolvers<ContextType = Context, ParentType extends ResolversParentTypes['GetCommentsResponse'] = ResolversParentTypes['GetCommentsResponse']> = {
-  comments?: Resolver<Array<ResolversTypes['Comment']>, ParentType, ContextType>;
+  comments?: Resolver<Maybe<Array<ResolversTypes['Comment']>>, ParentType, ContextType>;
   hashNext?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -373,8 +387,11 @@ export type PostResolvers<ContextType = Context, ParentType extends ResolversPar
 
 export type PostMutationResolvers<ContextType = Context, ParentType extends ResolversParentTypes['PostMutation'] = ResolversParentTypes['PostMutation']> = {
   addComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<PostMutationAddCommentArgs, 'comment'>>;
+  deleteComment?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<PostMutationDeleteCommentArgs, 'commentId'>>;
   deletePost?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  id?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  post?: Resolver<ResolversTypes['Post'], ParentType, ContextType>;
+  postId?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  updateComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<PostMutationUpdateCommentArgs, 'comment' | 'commentId'>>;
   updatePost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, Partial<PostMutationUpdatePostArgs>>;
   user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

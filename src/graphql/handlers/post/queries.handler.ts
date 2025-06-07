@@ -34,31 +34,31 @@ export const postAll: QueryResolvers["postAll"] = async (_, { userId, input }, {
     }
 };
 
-// export const post: QueryResolvers["post"] = async (parent, { postId }, { services, tools }) => {
-//     try {
-//         await tools.isAuthenticated();
-//         const post = await services.post.getPostById(postId);
-//
-//         return post;
-//     } catch (e) {
-//         throw customErrors(e, [{
-//             code: "NOT_FOUND",
-//             message: "Post not found",
-//             status: 404
-//         }]);
-//     }
-// };
+export const post: QueryResolvers["post"] = async (_, { postId }, { services, tools }) => {
+    try {
+        await tools.isAuthenticated();
+        const post =  await services.post.getPostById({postId});
 
-// export const comment: QueryResolvers["comment"] = async (parent, { postId, input }, { services, tools }) => {
+        return { post };
+    } catch (e) {
+        throw customErrors(e, [{
+            code: "NOT_FOUND",
+            message: "Post not found",
+            status: 404
+        }]);
+    }
+};
+
+// export const comment: GetPostResponseResolvers["comments"] = async ({post}, { input }, { services, tools }) => {
 //     try {
 //         await tools.isAuthenticated();
-//         const validId = tools.zodValidator.isId({ id: postId });
+//         const validId = tools.zodValidator.isId({ id: post.id });
 //         const validInput = tools.zodValidator.isGetInputs(input);
 //
-//         const comments = await services.post.getCommentById({
-//             input: validInput,
-//             postId: validId.id
-//         });
+//         // const comments = await services.post.getCommentById({
+//         //     input: validInput,
+//         //     postId: validId.id
+//         // });
 //
 //         return comments || [];
 //     } catch (e) {

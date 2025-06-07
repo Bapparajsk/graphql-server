@@ -1,5 +1,5 @@
 import {customErrors} from "@/graphql/helper";
-import {MutationResolvers, PostMutationResolvers} from "@/graphql/types";
+import {MutationResolvers, PostMutationResolvers, QueryResolvers} from "@/graphql/types";
 import {filterValidFields} from "@/lib/filter";
 
 
@@ -17,19 +17,24 @@ export const createPost: MutationResolvers["createPost"] = async (parent, { inpu
     }
 };
 
-export const postMutation: MutationResolvers["post"] = async (_, {id}, { tools }) => {
+export const postMutation: MutationResolvers["post"] = async (_, { id }, { services, tools }) => {
     try {
         const user = await tools.isAuthenticated();
-        return {id, user};
+        const validId = tools.zodValidator.isId({ id });
+
+        const post = await services.post.getPostById({ postId: validId.id });
+        return {postId: post.id, post, user};
     } catch (e) {
         console.log("Error in post mutation:", e);
-        throw customErrors(e);
+        throw customErrors(e, [
+            { code: "NOT_FOUND", message: "Post not found", status: 404 },
+        ]);
     }
 };
 
-export const updatePost: PostMutationResolvers["updatePost"] = async ({ id, user }, { input }, { services ,tools }) => {
+export const updatePost: PostMutationResolvers["updatePost"] = async ({ postId, user }, { input }, { services ,tools }) => {
     try {
-        const post = await services.post.isMyPost(user.id, id);
+        const post = await services.post.isMyPost(user.id, postId);
 
         const data = filterValidFields(tools.zodValidator.isValidUpdatePost(input));
         const updatedPost = await services.post.updatePost({ input: data, postId: post.id, });
@@ -49,9 +54,9 @@ export const updatePost: PostMutationResolvers["updatePost"] = async ({ id, user
     }
 };
 
-export const deletePost: PostMutationResolvers["deletePost"] = async ({ id, user }, args, { services }) => {
+export const deletePost: PostMutationResolvers["deletePost"] = async ({ postId, user }, args, { services }) => {
     try {
-        const post = await services.post.isMyPost(user.id, id);
+        const post = await services.post.isMyPost(user.id, postId);
         await services.post.deletePost(post.id);
         return true;
     } catch (e) {
@@ -61,16 +66,3 @@ export const deletePost: PostMutationResolvers["deletePost"] = async ({ id, user
     }
 };
 
-export const addComment: PostMutationResolvers["addComment"] = async ({ id, user }, { comment }, { services, tools }) => {
-    try {
-        const validComment = tools.zodValidator.isValidComment(comment);
-        return await services.post.addComment({
-            postId: id,
-            user,
-            comment: validComment.comment
-        });
-    } catch (e) {
-        console.log("Error in addComment:", e);
-        throw customErrors(e);
-    }
-};

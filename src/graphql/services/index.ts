@@ -1,4 +1,5 @@
 import AuthService from "./auth.service";
+import CommentService from "./comment.service";
 import PostService from "./post.service";
 import UserService from "./user.service";
 
@@ -6,5 +7,6 @@ import UserService from "./user.service";
 export {
     UserService,
     PostService,
-    AuthService
+    CommentService,
+    AuthService,
 };

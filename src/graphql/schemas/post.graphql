@@ -17,7 +17,7 @@ type GetPostAllResponse {
 }
 
 type GetCommentsResponse {
-    comments: [Comment!]!
+    comments: [Comment!]
     hashNext: Boolean
 }
 
@@ -41,7 +41,8 @@ type Comment {
 }
 
 type PostMutation {
-    id: Int!
+    postId: Int!
+    post: Post!
     user: User!
 #    can do this only author
     updatePost(input: UpdatePostInput): Post
@@ -49,4 +50,6 @@ type PostMutation {
 
 #    this can do by any user
     addComment(comment: String!): Comment
+    updateComment(commentId: Int!, comment: String!): Comment
+    deleteComment(commentId: Int!): Boolean
 }

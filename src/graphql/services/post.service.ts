@@ -1,8 +1,7 @@
 import * as type from "../types";
 
 import prisma from "@/lib/prisma";
-import {transformComment, transformPost} from "@/lib/transformers";
-
+import {transformPost} from "@/lib/transformers";
 
 class PostService {
     createPost = async ({ input, authorId }: type.MutationCreatePostArgs & { authorId : number } ): Promise<type.Post> => {
@@ -32,10 +31,10 @@ class PostService {
         return posts.map(transformPost);
     };
 
-    getPostById = async (id: number): Promise<type.Post> => {
+    getPostById = async ({ postId, author = false } : { postId: number; author?: boolean}): Promise<type.Post> => {
         const post = await prisma.post.findUnique({
-            where: { id },
-            include: { author: true },
+            where: { id: postId },
+            include: { author },
         });
 
         if (!post) {
@@ -62,7 +61,6 @@ class PostService {
         return transformPost(post);
     };
 
-    // Updates post
     updatePost = async ({ input, postId } : type.PostMutationUpdatePostArgs & { postId: number } ): Promise<type.Post> => {
         const post = await prisma.post.update({ where: {id: postId}, data: input, });
         return transformPost(post);
@@ -71,18 +69,6 @@ class PostService {
     deletePost = async (postId: number): Promise<type.Post> => {
         const post = await  prisma.post.delete({ where: { id: postId }, });
         return transformPost(post);
-    };
-
-    addComment = async ({ postId, user, comment }: { postId: number, user: type.User, comment: string }): Promise<type.Comment> => {
-        const com = await prisma.comment.create({
-            data: {
-                comment,
-                postId,
-                authorId: user.id,
-            },
-        });
-
-        return transformComment(com, user);
     };
 }
 

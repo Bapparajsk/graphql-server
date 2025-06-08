@@ -18,10 +18,12 @@
     "@graphql-codegen/cli": "^5.0.6",
     "@parcel/watcher": "^2.5.1",
     "@prisma/client": "^6.9.0",
+    "bullmq": "^5.53.2",
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "graphql": "^16.11.0",
     "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^7.0.3",
     "zod": "^3.25.51"
   },
   "devDependencies": {
@@ -32,6 +34,7 @@
     "@types/jest": "^29.0.3",
     "@types/jsonwebtoken": "^9.0.9",
     "@types/node": "^20.0.0",
+    "@types/nodemailer": "^6.4.17",
     "concurrently": "^8.2.2",
     "eslint": "^9.28.0",
     "eslint-plugin-import": "^2.31.0",

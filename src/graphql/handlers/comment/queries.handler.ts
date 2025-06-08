@@ -1,3 +1,5 @@
+import {customErrors} from "@graphql/helper";
+
 import {PostQueryResolvers} from "@/graphql/types";
 
 export const comments: PostQueryResolvers["comments"] = async ({ post }, { input }, { services, tools }) => {
@@ -12,6 +14,6 @@ export const comments: PostQueryResolvers["comments"] = async ({ post }, { input
         return { comments: commentsList, hashNext };
     } catch (e) {
         console.error("Error in comments resolver:", e);
-        throw new Error("Failed to fetch comments");
+        throw customErrors(e);
     }
 };

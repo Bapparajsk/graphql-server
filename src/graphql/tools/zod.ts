@@ -44,7 +44,7 @@ class ZodValidator {
     formatError = formatError;
 
     isRegister(input: InputData) {
-        return authSchema.parse(input);
+        return authSchema.pick({ name: true, email: true, password: true }).parse(input);
     }
 
     isAuth(input: InputData) {

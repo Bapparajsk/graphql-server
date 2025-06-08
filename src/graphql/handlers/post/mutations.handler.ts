@@ -61,7 +61,7 @@ export const deletePost: PostMutationResolvers["deletePost"] = async ({ postId, 
         return true;
     } catch (e) {
         throw customErrors(e,[
-            { code: "FORBIDDEN", message: "You are not authorized to manipulate this post", status: 403 }
+            { code: "FORBIDDEN", message: "You are not authorized to delete this post", status: 403 }
         ]);
     }
 };

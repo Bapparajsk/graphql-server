@@ -13,3 +13,21 @@ input CreateUserInput {
     email: String!
     password: String!
 }
+
+input SendOtpInput {
+    identifier: String! # email or phone
+    type: String!       # "email" or "phone"
+    purpose: String!    # "register" or "login"
+}
+
+enum OtpPurpose {
+    REGISTER
+    LOGIN
+}
+
+input VerifyOtpInput {
+    identifier: String!
+    otp: String!
+    purpose: OtpPurpose!
+}
+

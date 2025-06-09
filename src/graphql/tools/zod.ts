@@ -51,6 +51,10 @@ class ZodValidator {
         return authSchema.pick({ email: true, password: true }) .parse(input);
     }
 
+    isEmail(email: string) {
+        return z.email("Invalid email format").parse(email);
+    }
+
     isId(id: number) {
         return authSchema.pick({id: true}).parse({id});
     }

@@ -3,6 +3,11 @@ input GetInputs {
     limit: Int!
 }
 
+type SuccessResponse {
+    success: Boolean!
+    message: String
+}
+
 type Query {
     user(input: GetInputs): UsersResponse
     postList(userId: Int, input: GetInputs): PostListResponse
@@ -12,6 +17,10 @@ type Query {
 type Mutation {
     createUser(input: CreateUserInput): AuthResponse!
     signIn(input: SignInInput): AuthResponse!
+
+#    otp authentication
+    sendOtp(input: SendOtpInput!): SuccessResponse!
+    verifyOtp(input: VerifyOtpInput!): SuccessResponse!
 
     user(id: Int!): UserMutation
     post(id: Int!): PostMutation

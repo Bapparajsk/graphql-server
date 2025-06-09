@@ -25,6 +25,12 @@ class UserController {
         });
     };
 
+    setUserVerified = (id: number) => {
+        return prisma.user.update({
+            where: { id },
+            data: { isVerified: true }
+        });
+    };
 }
 
 export default UserController;

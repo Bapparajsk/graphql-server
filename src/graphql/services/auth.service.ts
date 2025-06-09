@@ -1,8 +1,12 @@
-import crypto from "node:crypto";
+import crypto, { randomInt } from "node:crypto";
 import { promisify } from "util";
 
 import prisma from "../../lib/prisma";
-import { MutationCreateUserArgs, MutationSignInArgs } from "../types";
+import {MutationCreateUserArgs, MutationSignInArgs} from "../types";
+
+import transporter from "@/config/nodemailer.config";
+import redis from "@/config/redis.config";
+import {user} from "@graphql/handlers/user";
 
 interface HashPassword {
     salt: string;
@@ -16,6 +20,11 @@ const config = {
     keylen: 64,
     digest: "sha512"
 };
+
+interface OtpDetails {
+    otp: string;
+    otpExpires: Date;
+}
 
 class AuthService {
 
@@ -66,11 +75,49 @@ class AuthService {
             throw new Error("Invalid email or password");
         }
         // If the password is valid, return the services data
+        return data;
+    }
+
+    generateOtp(): OtpDetails {
+        const otp = randomInt(100000, 999999); // Generate a 6-digit OTP
         return {
-            id: data.id,
-            email: data.email,
-            name: data.name
+            otp: otp.toString(),
+            otpExpires: new Date(Date.now() + 5 * 60 * 1000), // OTP expires in 5 minutes
         };
+    };
+
+    async saveOtp({ identifier, otpDetails, purpose } : { identifier: string; otpDetails: OtpDetails; purpose: string }) {
+        await redis.set(`${purpose}:${identifier}`, JSON.stringify(otpDetails), "EX", 300); // Expires in 5 min
+    }
+
+    async verifyOtp({ identifier, otp, purpose }: { identifier: string; otp: string; purpose: string }) {
+        const otpDetails = await redis.get(`${purpose}:${identifier}`);
+        if (!otpDetails) {
+            throw new Error("OTP_NOT_FOUND");
+        }
+
+        const { otp: savedOtp, otpExpires } = JSON.parse(otpDetails) as OtpDetails;
+        const currentDate = new Date();
+
+        if (currentDate > new Date(otpExpires)) {
+            throw new Error("OTP_EXPIRED");
+        }
+
+        return savedOtp === otp;
+    }
+
+    async sendOtp({ identifier, otp }: { identifier: string; otp: string }) {
+        try {
+            await transporter.sendMail({
+                from: process.env.TRANSPORTER_USER || "your email",
+                to: identifier,
+                subject: "OTP",
+                text: `Your OTP is ${otp}`,
+            });
+        } catch (e) {
+            console.log("Error sending OTP:", e);
+            throw new Error("ERROR_SENDING_OTP");
+        }
     }
 }
 

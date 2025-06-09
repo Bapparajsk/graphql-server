@@ -54,3 +54,50 @@ export const signIn: MutationResolvers["signIn"] = async (_, { input }, {service
         throw customErrors(e);
     }
 };
+
+export const sendOtp: MutationResolvers["sendOtp"] = async (_, { input }, { services, tools }) => {
+    try {
+
+        await tools.isAuthenticated();
+        const { identifier, purpose } = input;
+
+        const validEmail = tools.zodValidator.isEmail(identifier);
+        const otpDetails = services.auth.generateOtp();
+
+        await services.auth.saveOtp({ identifier: validEmail, otpDetails, purpose });
+        await services.auth.sendOtp({ identifier: validEmail, otp: otpDetails.otp }); // via SMS or email
+
+        return { success: true, message: "OTP sent successfully" };
+    } catch (e) {
+        console.log("Error in sendOtp:", e);
+        throw customErrors(e, [
+            { code: "ERROR_SENDING_OTP", message: "Failed to send OTP", status: 500 },
+        ]);
+    }
+};
+
+export const verifyOtp: MutationResolvers["verifyOtp"] = async (_, { input }, { services, tools }) => {
+    try {
+
+        const user = await tools.isAuthenticated();
+
+        const { otp, identifier, purpose } = input;
+        const isValid = await services.auth.verifyOtp({ identifier, otp, purpose });
+
+        if(!isValid) {
+            throw customError({ code: "INVALID_OTP", message: "Invalid OTP", status: 400 });
+        }
+
+        await services.user.setUserVerified(user.id);
+
+        return { success: true, message: "OTP verified successfully" };
+
+    } catch (e) {
+        console.log("Error in verifyOtp:", e);
+        throw customErrors(e, [
+            { code: "OTP_NOT_FOUND", message: "OTP not found", status: 404 },
+            { code: "INVALID_OTP", message: "Invalid OTP", status: 400 },
+            { code: "OTP_EXPIRED", message: "OTP has expired", status: 400 },
+        ]);
+    }
+};

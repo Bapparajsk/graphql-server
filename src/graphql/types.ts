@@ -60,8 +60,10 @@ export type Mutation = {
   createPost: Post;
   createUser: AuthResponse;
   post?: Maybe<PostMutation>;
+  sendOtp: SuccessResponse;
   signIn: AuthResponse;
   user?: Maybe<UserMutation>;
+  verifyOtp: SuccessResponse;
 };
 
 
@@ -80,6 +82,11 @@ export type MutationPostArgs = {
 };
 
 
+export type MutationSendOtpArgs = {
+  input: SendOtpInput;
+};
+
+
 export type MutationSignInArgs = {
   input?: InputMaybe<SignInInput>;
 };
@@ -88,6 +95,16 @@ export type MutationSignInArgs = {
 export type MutationUserArgs = {
   id: Scalars['Int']['input'];
 };
+
+
+export type MutationVerifyOtpArgs = {
+  input: VerifyOtpInput;
+};
+
+export enum OtpPurpose {
+  Login = 'LOGIN',
+  Register = 'REGISTER'
+}
 
 export type Post = {
   __typename?: 'Post';
@@ -171,9 +188,21 @@ export type QueryUserArgs = {
   input?: InputMaybe<GetInputs>;
 };
 
+export type SendOtpInput = {
+  identifier: Scalars['String']['input'];
+  purpose: Scalars['String']['input'];
+  type: Scalars['String']['input'];
+};
+
 export type SignInInput = {
   email: Scalars['String']['input'];
   password: Scalars['String']['input'];
+};
+
+export type SuccessResponse = {
+  __typename?: 'SuccessResponse';
+  message?: Maybe<Scalars['String']['output']>;
+  success: Scalars['Boolean']['output'];
 };
 
 export type UpdatePostInput = {
@@ -189,6 +218,8 @@ export type User = {
   __typename?: 'User';
   email: Scalars['String']['output'];
   id: Scalars['Int']['output'];
+  isActive: Scalars['Boolean']['output'];
+  isVerified: Scalars['Boolean']['output'];
   name: Scalars['String']['output'];
 };
 
@@ -207,6 +238,12 @@ export type UsersResponse = {
   __typename?: 'UsersResponse';
   hashNext?: Maybe<Scalars['Boolean']['output']>;
   users: Array<User>;
+};
+
+export type VerifyOtpInput = {
+  identifier: Scalars['String']['input'];
+  otp: Scalars['String']['input'];
+  purpose: OtpPurpose;
 };
 
 
@@ -289,18 +326,22 @@ export type ResolversTypes = {
   GetInputs: GetInputs;
   Int: ResolverTypeWrapper<Scalars['Int']['output']>;
   Mutation: ResolverTypeWrapper<{}>;
+  OtpPurpose: OtpPurpose;
   Post: ResolverTypeWrapper<Post>;
   PostListResponse: ResolverTypeWrapper<PostListResponse>;
   PostMutation: ResolverTypeWrapper<PostMutation>;
   PostQuery: ResolverTypeWrapper<PostQuery>;
   Query: ResolverTypeWrapper<{}>;
+  SendOtpInput: SendOtpInput;
   SignInInput: SignInInput;
   String: ResolverTypeWrapper<Scalars['String']['output']>;
+  SuccessResponse: ResolverTypeWrapper<SuccessResponse>;
   UpdatePostInput: UpdatePostInput;
   UpdateUserInput: UpdateUserInput;
   User: ResolverTypeWrapper<User>;
   UserMutation: ResolverTypeWrapper<UserMutation>;
   UsersResponse: ResolverTypeWrapper<UsersResponse>;
+  VerifyOtpInput: VerifyOtpInput;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -319,13 +360,16 @@ export type ResolversParentTypes = {
   PostMutation: PostMutation;
   PostQuery: PostQuery;
   Query: {};
+  SendOtpInput: SendOtpInput;
   SignInInput: SignInInput;
   String: Scalars['String']['output'];
+  SuccessResponse: SuccessResponse;
   UpdatePostInput: UpdatePostInput;
   UpdateUserInput: UpdateUserInput;
   User: User;
   UserMutation: UserMutation;
   UsersResponse: UsersResponse;
+  VerifyOtpInput: VerifyOtpInput;
 };
 
 export type AuthResponseResolvers<ContextType = Context, ParentType extends ResolversParentTypes['AuthResponse'] = ResolversParentTypes['AuthResponse']> = {
@@ -354,8 +398,10 @@ export type MutationResolvers<ContextType = Context, ParentType extends Resolver
   createPost?: Resolver<ResolversTypes['Post'], ParentType, ContextType, Partial<MutationCreatePostArgs>>;
   createUser?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, Partial<MutationCreateUserArgs>>;
   post?: Resolver<Maybe<ResolversTypes['PostMutation']>, ParentType, ContextType, RequireFields<MutationPostArgs, 'id'>>;
+  sendOtp?: Resolver<ResolversTypes['SuccessResponse'], ParentType, ContextType, RequireFields<MutationSendOtpArgs, 'input'>>;
   signIn?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, Partial<MutationSignInArgs>>;
   user?: Resolver<Maybe<ResolversTypes['UserMutation']>, ParentType, ContextType, RequireFields<MutationUserArgs, 'id'>>;
+  verifyOtp?: Resolver<ResolversTypes['SuccessResponse'], ParentType, ContextType, RequireFields<MutationVerifyOtpArgs, 'input'>>;
 };
 
 export type PostResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Post'] = ResolversParentTypes['Post']> = {
@@ -397,9 +443,17 @@ export type QueryResolvers<ContextType = Context, ParentType extends ResolversPa
   user?: Resolver<Maybe<ResolversTypes['UsersResponse']>, ParentType, ContextType, Partial<QueryUserArgs>>;
 };
 
+export type SuccessResponseResolvers<ContextType = Context, ParentType extends ResolversParentTypes['SuccessResponse'] = ResolversParentTypes['SuccessResponse']> = {
+  message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type UserResolvers<ContextType = Context, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
   email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  isActive?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  isVerified?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -426,6 +480,7 @@ export type Resolvers<ContextType = Context> = {
   PostMutation?: PostMutationResolvers<ContextType>;
   PostQuery?: PostQueryResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
+  SuccessResponse?: SuccessResponseResolvers<ContextType>;
   User?: UserResolvers<ContextType>;
   UserMutation?: UserMutationResolvers<ContextType>;
   UsersResponse?: UsersResponseResolvers<ContextType>;

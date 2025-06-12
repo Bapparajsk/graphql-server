@@ -1,6 +1,6 @@
 import { PrismaClientKnownRequestError } from "../../../generated/prisma/runtime/library";
 import {customErrors, customError} from "../helper";
-import {MutationResolvers, User} from "../types";
+import {MutationResolvers} from "../types";
 
 import {singCookie} from "@/lib/cookies";
 
@@ -61,10 +61,10 @@ export const sendOtp: MutationResolvers["sendOtp"] = async (_, { input }, { serv
 
         // Validate email and normalize
         const validEmail = tools.zodValidator.isEmail(identifier);
-        let user: User | null = null;
+
         // Optional auth check for non-login flows
         if (purpose !== "LOGIN") {
-            user = await tools.isAuthenticated();
+            await tools.isAuthenticated();
         }
 
         // Throttle resend
@@ -74,7 +74,7 @@ export const sendOtp: MutationResolvers["sendOtp"] = async (_, { input }, { serv
         }
 
 
-        user = await services.user.getUserByEmail(validEmail);
+        const user = await services.user.getUserByEmail(validEmail);
         if (!user) {
             throw customError({ code: "USER_NOT_FOUND", message: "User not found", status: 404 });
         }
@@ -82,17 +82,18 @@ export const sendOtp: MutationResolvers["sendOtp"] = async (_, { input }, { serv
         // user.
 
         // Rate limit
-        if (user?.otpResetCount >= 5) {
+        if (user.otpResetCount >= 5) {
             throw customError({ code: "OTP_RESET_LIMIT", message: "You have reached the maximum OTP reset limit", status: 429 });
         }
 
         // Generate & send OTP
         const otpDetails = services.auth.generateOtp();
-        await services.auth.saveOtp({ identifier: validEmail, purpose, otpDetails });
-        await services.auth.sendOtp({ identifier: validEmail, otp: otpDetails.otp });
 
-        // Update user OTP reset count
-        await services.user.updateUser(user.id, { otpResetCount: user.otpResetCount + 1 });
+        await Promise.all([
+            services.auth.saveOtp({ identifier: validEmail, purpose, otpDetails }),
+            services.auth.sendOtp({ identifier: validEmail, otp: otpDetails.otp }),
+            services.user.updateUser(user.id, { otpResetCount: user.otpResetCount + 1 })
+        ]);
 
         return { success: true, message: "OTP sent successfully" };
     } catch (e) {

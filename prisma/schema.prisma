@@ -16,6 +16,7 @@ model User {
   name      String
   email     String   @unique
   password  String
+  otpResetCount Int      @default(3)
   isVerified Boolean  @default(false)
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())

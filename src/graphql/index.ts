@@ -13,11 +13,14 @@ import {PostService, AuthService, UserService, CommentService} from "./services"
 import Jwt from "./tools/JWT";
 import {ZodValidator} from "./tools/zod";
 
+import {rateLimiter} from "@/middleware";
+
 
 const router = Router();
 
-const schemaDir = path.resolve(__dirname, "./schemas");
+router.use(rateLimiter);
 
+const schemaDir = path.resolve(__dirname, "./schemas");
 const typeDefs = gql(`
     ${readdirSync(schemaDir)
     .filter(file => file.endsWith(".graphql"))
@@ -29,9 +32,11 @@ async function startApolloServer() {
     const server = new ApolloServer({ typeDefs, resolvers });
     await server.start();
 
-    router.use("/", expressMiddleware(server, {
+    router.use("/" ,expressMiddleware(server, {
+
         context: async ({ req, res }) => {
 
+            // todo - check user query or mutation name to determine if authentication is required
             const ctx = {
                 services: {
                     auth: new AuthService(),

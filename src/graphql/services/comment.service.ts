@@ -1,10 +1,10 @@
 import * as type from "../types";
 
-import prisma from "@/lib/prisma";
+import prisma, { Comment } from "@/lib/prisma";
 import {transformComment} from "@/lib/transformers";
 
 class CommentService {
-    getComment = async (commentId: number) => {
+    getComment = async (commentId: number): Promise<Comment> => {
         const comment = await prisma.comment.findUnique({
             where: { id: commentId },
             // include: { author: true },
@@ -17,7 +17,7 @@ class CommentService {
         return comment;
     };
 
-    getComments = async ({ postId , input }: type.PostQueryCommentsArgs & { postId: number }): Promise<type.Comment[]> => {
+    getComments = async ({ postId , input }: type.PostQueryCommentsArgs & { postId: number }): Promise<Comment[]> => {
         const skip = (input.page - 1) * input.limit;
         const comments = await prisma.comment.findMany({
             where: { postId },
@@ -30,7 +30,7 @@ class CommentService {
         return comments.map(comment => transformComment(comment, comment.author));
     };
 
-    addComment = async ({ postId, user, comment }: { postId: number, user: type.User, comment: string }): Promise<type.Comment> => {
+    addComment = async ({ postId, user, comment }: { postId: number, user: type.User, comment: string }): Promise<Comment> => {
         const com = await prisma.comment.create({
             data: {
                 comment,
@@ -42,7 +42,7 @@ class CommentService {
         return transformComment(com, user);
     };
 
-    updateComment = async ({ user, commentId, comment }: {postId: number, user: type.User, commentId: number, comment: string }): Promise<type.Comment> => {
+    updateComment = async ({ user, commentId, comment }: {postId: number, user: type.User, commentId: number, comment: string }): Promise<Comment> => {
         const com = await prisma.comment.update({
             where: { id: commentId },
             data: { comment },

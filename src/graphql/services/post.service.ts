@@ -1,10 +1,10 @@
 import * as type from "../types";
 
-import prisma from "@/lib/prisma";
+import prisma, { Post } from "@/lib/prisma";
 import {transformPost} from "@/lib/transformers";
 
 class PostService {
-    createPost = async ({ input, authorId }: type.MutationCreatePostArgs & { authorId : number } ): Promise<type.Post> => {
+    createPost = async ({ input, authorId }: type.MutationCreatePostArgs & { authorId : number } ): Promise<Post> => {
         const { title, content } = input;
 
         const post = await prisma.post.create({
@@ -18,7 +18,7 @@ class PostService {
         return transformPost(post);
     };
 
-    getPosts = async ({ input, userId }: type.QueryPostListArgs & { id?: number }): Promise<type.Post[]> => {
+    getPosts = async ({ input, userId }: type.QueryPostListArgs & { id?: number }): Promise<Post[]> => {
         const skip = (input.page - 1) * input.limit;
         const posts = await prisma.post.findMany({
             where: userId ? { authorId: userId } : undefined,
@@ -31,7 +31,7 @@ class PostService {
         return posts.map(transformPost);
     };
 
-    getPostById = async ({ postId, author = false } : { postId: number; author?: boolean}): Promise<type.Post> => {
+    getPostById = async ({ postId, author = false } : { postId: number; author?: boolean}): Promise<Post> => {
         const post = await prisma.post.findUnique({
             where: { id: postId },
             include: { author },
@@ -44,7 +44,7 @@ class PostService {
         return transformPost(post);
     };
 
-    isMyPost = async (userId: number, postId: number): Promise<type.Post> => {
+    isMyPost = async (userId: number, postId: number): Promise<Post> => {
         const post = await prisma.post.findUnique({
             where: { id: postId },
             // include: { author: true}
@@ -61,12 +61,12 @@ class PostService {
         return transformPost(post);
     };
 
-    updatePost = async ({ input, postId } : type.PostMutationUpdatePostArgs & { postId: number } ): Promise<type.Post> => {
+    updatePost = async ({ input, postId } : type.PostMutationUpdatePostArgs & { postId: number } ): Promise<Post> => {
         const post = await prisma.post.update({ where: {id: postId}, data: input, });
         return transformPost(post);
     };
 
-    deletePost = async (postId: number): Promise<type.Post> => {
+    deletePost = async (postId: number): Promise<Post> => {
         const post = await  prisma.post.delete({ where: { id: postId }, });
         return transformPost(post);
     };

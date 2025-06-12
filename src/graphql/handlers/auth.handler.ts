@@ -1,6 +1,6 @@
 import { PrismaClientKnownRequestError } from "../../../generated/prisma/runtime/library";
 import {customErrors, customError} from "../helper";
-import {MutationResolvers} from "../types";
+import {MutationResolvers, User} from "../types";
 
 import {singCookie} from "@/lib/cookies";
 
@@ -57,24 +57,52 @@ export const signIn: MutationResolvers["signIn"] = async (_, { input }, {service
 
 export const sendOtp: MutationResolvers["sendOtp"] = async (_, { input }, { services, tools }) => {
     try {
-
-        await tools.isAuthenticated();
         const { identifier, purpose } = input;
 
+        // Validate email and normalize
         const validEmail = tools.zodValidator.isEmail(identifier);
-        const otpDetails = services.auth.generateOtp();
+        let user: User | null = null;
+        // Optional auth check for non-login flows
+        if (purpose !== "LOGIN") {
+            user = await tools.isAuthenticated();
+        }
 
-        await services.auth.saveOtp({ identifier: validEmail, otpDetails, purpose });
-        await services.auth.sendOtp({ identifier: validEmail, otp: otpDetails.otp }); // via SMS or email
+        // Throttle resend
+        const { resendTimeLimit } = await services.auth.getOtpDetails({ identifier: validEmail, purpose });
+        if (resendTimeLimit && resendTimeLimit > Date.now()) {
+            throw customError({ code: "RESEND_OTP_LIMIT", message: "Please wait before requesting a new OTP", status: 429 });
+        }
+
+
+        user = await services.user.getUserByEmail(validEmail);
+        if (!user) {
+            throw customError({ code: "USER_NOT_FOUND", message: "User not found", status: 404 });
+        }
+
+        // user.
+
+        // Rate limit
+        if (user?.otpResetCount >= 5) {
+            throw customError({ code: "OTP_RESET_LIMIT", message: "You have reached the maximum OTP reset limit", status: 429 });
+        }
+
+        // Generate & send OTP
+        const otpDetails = services.auth.generateOtp();
+        await services.auth.saveOtp({ identifier: validEmail, purpose, otpDetails });
+        await services.auth.sendOtp({ identifier: validEmail, otp: otpDetails.otp });
+
+        // Update user OTP reset count
+        await services.user.updateUser(user.id, { otpResetCount: user.otpResetCount + 1 });
 
         return { success: true, message: "OTP sent successfully" };
     } catch (e) {
-        console.log("Error in sendOtp:", e);
+        console.error("Error in sendOtp:", e);
         throw customErrors(e, [
             { code: "ERROR_SENDING_OTP", message: "Failed to send OTP", status: 500 },
         ]);
     }
 };
+
 
 export const verifyOtp: MutationResolvers["verifyOtp"] = async (_, { input }, { services, tools }) => {
     try {

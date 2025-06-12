@@ -8,7 +8,7 @@ import {formatError} from "../tools/zod";
 export type errorCode = "GRAPHQL_PARSE_FAILED" | "GRAPHQL_VALIDATION_FAILED" | "BAD_USER_INPUT" | "USER_NOT_FOUND" |
     "PERSISTED_QUERY_NOT_FOUND" | "OPERATION_RESOLUTION_FAILURE" | "BAD_REQUEST" | "INTERNAL_SERVER_ERROR" | "UNAUTHORIZED";
 
-interface ErrorTypes {
+export interface ErrorTypes {
     code: errorCode | string;
     message: string;
     status: number

@@ -1,6 +1,9 @@
 import crypto, { randomInt } from "node:crypto";
 import { promisify } from "util";
 
+import {customError} from "@graphql/helper";
+
+import { PrismaClientKnownRequestError } from "../../../generated/prisma/runtime/library";
 import prisma, { User } from "../../lib/prisma";
 import {MutationCreateUserArgs, MutationSignInArgs} from "../types";
 
@@ -49,30 +52,50 @@ class AuthService {
     }
 
     async createUser({ input }: MutationCreateUserArgs): Promise<User> {
-        const { salt, hash } = await this.#hashPassword(input.password);
-        return prisma.user.create({
-            data: {
-                email: input.email,
-                name: input.name,
-                password: hash, // Store the hashed password
-                salt // Store the salt for future password verification
+        try {
+            const { salt, hash } = await this.#hashPassword(input.password);
+            return prisma.user.create({
+                data: {
+                    email: input.email,
+                    name: input.name,
+                    password: hash, // Store the hashed password
+                    salt // Store the salt for future password verification
+                }
+            });
+        } catch (e) {
+            if (e instanceof PrismaClientKnownRequestError) {
+                if (e.code === "P2002") {
+                    // Unique constraint failed
+                    throw new Error("EMAIL_ALREADY_EXISTS");
+                }
             }
-        });
+
+            throw customError("INTERNAL_SERVER_ERROR", e instanceof Error ? e.message : "An error occurred while creating the user");
+        }
     }
 
     async singInUser({ input }: MutationSignInArgs): Promise<User> {
+
         const data = await prisma.user.findUnique({
             where: {  email: input.email },
         });
 
         if (!data) {
-            throw new Error("Invalid email or password");
+            throw customError({
+                code: "INVALID_CREDENTIALS",
+                message: "Invalid email or password",
+                status: 400
+            });
         }
 
         // Verify the password
         const isPasswordValid = await this.#verifyPassword(input.password, data.salt, data.password);
         if (!isPasswordValid) {
-            throw new Error("Invalid email or password");
+            throw customError({
+                code: "INVALID_CREDENTIALS",
+                message: "Invalid email or password",
+                status: 400
+            });
         }
         // If the password is valid, return the services data
         return data;
@@ -98,9 +121,29 @@ class AuthService {
     async getOtpDetails({ identifier, purpose }: { identifier: string; purpose: string }) {
         const otpDetails = await redis.get(`${purpose}:${identifier}`);
         if (!otpDetails) {
-            throw new Error("OTP_NOT_FOUND");
+            throw customError({
+                code: "OTP_NOT_FOUND",
+                message: "OTP not found for the given identifier and purpose",
+                status: 404,
+            })
         }
+
         return JSON.parse(otpDetails) as OtpDetails;
+    }
+
+    async isValidThrottle ({ identifier, purpose }: { identifier: string; purpose: string }) {
+        const { resendTimeLimit } = await this.getOtpDetails({ identifier, purpose });
+        const currentDate = new Date();
+
+        if (resendTimeLimit && resendTimeLimit > currentDate.getTime()) {
+            throw customError({
+                code: "RESEND_OTP_LIMIT",
+                message: "Please wait before requesting another OTP.",
+                status: 429,
+            });
+        }
+
+        return true;
     }
 
     async verifyOtp({ identifier, otp, purpose }: { identifier: string; otp: string; purpose: string }) {
@@ -108,10 +151,22 @@ class AuthService {
         const currentDate = new Date();
 
         if (currentDate > new Date(otpExpires)) {
-            throw new Error("OTP_EXPIRED");
+            throw customError({
+                code: "OTP_EXPIRED",
+                message: "OTP has expired",
+                status: 400,
+            });
         }
 
-        return savedOtp === otp;
+        if(savedOtp !== otp) {
+            throw customError({
+                code: "INVALID_OTP",
+                message: "Invalid OTP",
+                status: 400,
+            });
+        }
+
+        return true;
     }
 
     async sendOtp({ identifier, otp }: { identifier: string; otp: string }) {

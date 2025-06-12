@@ -1,19 +1,34 @@
+import {customError} from "@graphql/helper";
+
 import * as type from "../types";
 
 import prisma, { User } from "@/lib/prisma";
 
+
 class UserController {
 
-    getUserById(id: number): Promise<User> {
-        return prisma.user.findUnique({
+    async getUserById(id: number): Promise<User> {
+        const user = await prisma.user.findUnique({
             where: { id }
         });
+
+        if (!user) {
+            throw customError("USER_NOT_FOUND");
+        }
+
+        return user;
     }
 
-    getUserByEmail(email: string) {
-        return prisma.user.findUnique({
+    async getUserByEmail(email: string): Promise<User>  {
+        const user = await prisma.user.findUnique({
             where: { email }
         });
+
+        if (!user) {
+            throw customError("USER_NOT_FOUND");
+        }
+
+        return user;
     }
 
     // ! only for testing purposes
@@ -40,6 +55,18 @@ class UserController {
             where: { id },
             data
         });
+    };
+
+    // validators
+    isValidOtpResetCount = (otpResetCount: number): boolean => {
+        if (otpResetCount >= 5) {
+            throw customError({
+                code: "OTP_RESET_LIMIT",
+                message: "OTP reset count must be between 0 and 5",
+                status: 400
+            });
+        }
+        return true;
     };
 }
 

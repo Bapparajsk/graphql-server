@@ -35,8 +35,6 @@ async function startApolloServer() {
     router.use("/" ,expressMiddleware(server, {
 
         context: async ({ req, res }) => {
-
-            // todo - check user query or mutation name to determine if authentication is required
             const ctx = {
                 services: {
                     auth: new AuthService(),

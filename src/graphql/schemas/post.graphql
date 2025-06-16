@@ -36,6 +36,7 @@ type Comment {
     comment: String!
     postId: Int!
     author: User!
+    authorId: Int!
     createdAt: String!
     updatedAt: String!
 }

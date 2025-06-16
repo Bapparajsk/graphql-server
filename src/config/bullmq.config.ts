@@ -26,4 +26,6 @@ export const createWorker = (name: string, processFunction: (job: Job) => Promis
     return worker;
 };
 
+export { queue_names };
+
 export const EmailQueue = new Queue(queue_names.EMAIL, QueueConfig);

@@ -1,6 +1,7 @@
 import {customErrors} from "@/graphql/helper";
 import {MutationResolvers, PostMutationResolvers} from "@/graphql/types";
 import {filterValidFields} from "@/lib/filter";
+import { transformPost } from "@/lib/transformers";
 
 
 export const createPost: MutationResolvers["createPost"] = async (parent, { input }, { services, tools }) => {
@@ -8,7 +9,7 @@ export const createPost: MutationResolvers["createPost"] = async (parent, { inpu
         const author = await tools.isAuthenticated();
         const isValidInput = tools.zodValidator.isValidCreatePost(input);
 
-        const post = await services.post.createPost({ input: isValidInput, authorId: author.id });
+        const post = transformPost(await services.post.createPost({ input: isValidInput, authorId: author.id }));
         return {...post, author};
 
     } catch (e) {
@@ -22,7 +23,7 @@ export const postMutation: MutationResolvers["post"] = async (_, { id }, { servi
         const user = await tools.isAuthenticated();
         const validId = tools.zodValidator.isId(id);
 
-        const post = await services.post.getPostById({ postId: validId.id });
+        const post = transformPost(await services.post.getPostById({ postId: validId.id }));
         return {postId: post.id, post, user};
     } catch (e) {
         console.log("Error in post mutation:", e);
@@ -37,7 +38,7 @@ export const updatePost: PostMutationResolvers["updatePost"] = async ({ postId, 
         const post = await services.post.isMyPost(user.id, postId);
 
         const data = filterValidFields(tools.zodValidator.isValidUpdatePost(input));
-        const updatedPost = await services.post.updatePost({ input: data, postId: post.id, });
+        const updatedPost = transformPost(await services.post.updatePost({ input: data, postId: post.id, }));
 
         return {...updatedPost, author: user};
     } catch (e) {

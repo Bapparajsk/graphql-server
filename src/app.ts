@@ -3,6 +3,8 @@ import express from "express";
 
 import ql_router from "./graphql/index";
 
+import("./lib/bullmq/workers");
+
 const app = express();
 const PORT = process.env.POST || 4000;
 

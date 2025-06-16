@@ -26,6 +26,7 @@ export type AuthResponse = {
 export type Comment = {
   __typename?: 'Comment';
   author: User;
+  authorId: Scalars['Int']['output'];
   comment: Scalars['String']['output'];
   createdAt: Scalars['String']['output'];
   id: Scalars['Int']['output'];
@@ -380,6 +381,7 @@ export type AuthResponseResolvers<ContextType = Context, ParentType extends Reso
 
 export type CommentResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Comment'] = ResolversParentTypes['Comment']> = {
   author?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  authorId?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   comment?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;

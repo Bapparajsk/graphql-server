@@ -1,3 +1,7 @@
+import {PostWithAuthor, CommentWithAuthor} from "@graphql/services/result";
+
+import { Post, Comment, User } from "@/lib/prisma";
+
 export function maskEmail(email: string): string {
     const [name, domain] = email.split("@");
     if (!name || !domain) return email;
@@ -13,14 +17,36 @@ export function convertDateToISO(date: Date | string): string {
     return date.toISOString();
 }
 
-export const transformPost = (post: any) => ({
+type Transformed = {
+    createdAt: string;
+    updatedAt: string;
+}
+
+type TransformedPost = Omit<Post, "createdAt" | "updatedAt"> & Transformed & Author;
+type TransformedComment = Omit<Comment, "createdAt" | "updatedAt"> & Transformed & Author;
+type TransformedUser = Omit<User, "createdAt" | "updatedAt"> & Transformed;
+
+type Author = {
+    author?: TransformedUser;
+}
+
+export const transformPost = (post: PostWithAuthor): TransformedPost  => ({
     ...post,
     createdAt: convertDateToISO(post.createdAt),
+    updatedAt: convertDateToISO(post.updatedAt),
+    ...(post.author && { author: transformUser(post.author) }),
 });
 
-export const transformComment = (comment: any, author?: any) => ({
+export const transformComment = (comment: CommentWithAuthor): TransformedComment => ({
     ...comment,
     createdAt: convertDateToISO(comment.createdAt),
     updatedAt: convertDateToISO(comment.updatedAt),
-    ...(author && { author }),
+    ...(comment.author && { author: transformUser(comment.author) }),
+});
+
+export const transformUser = (user: User): TransformedUser => ({
+    ...user,
+    createdAt: convertDateToISO(user.createdAt),
+    updatedAt: convertDateToISO(user.updatedAt),
+    email: maskEmail(user.email),
 });

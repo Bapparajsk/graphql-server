@@ -1,12 +1,12 @@
 import {customErrors} from "@graphql/helper";
-import {PostMutationResolvers} from "@graphql/types";
+import {PostMutationResolvers, Comment} from "@graphql/types";
 
 interface ValidComment {
     postId: number;
     authorId: number;
 }
 
-const isValidCommentAndPost = <T extends ValidComment>(comment: T, expected: ValidComment) => {
+const isValidCommentAndPost = (comment: Comment, expected: ValidComment) => {
     if(comment.postId !== expected.postId) {
         throw new Error("COMMENT_NOT_BELONG_TO_POST");
     }

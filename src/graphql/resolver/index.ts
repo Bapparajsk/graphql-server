@@ -12,6 +12,5 @@ export const resolvers: Resolvers = {
     Query,
     Mutation,
     PostMutation,
-    User: { email: (parent) => maskEmail(parent.email) },
     PostQuery: { comments }
 };

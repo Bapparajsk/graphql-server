@@ -1,13 +1,15 @@
+import {PostResult} from "@graphql/services/result";
+
 import * as type from "../types";
 
-import prisma, { Post } from "@/lib/prisma";
-import {transformPost} from "@/lib/transformers";
+import prisma from "@/lib/prisma";
 
 class PostService {
-    createPost = async ({ input, authorId }: type.MutationCreatePostArgs & { authorId : number } ): Promise<Post> => {
+
+    createPost = async ({ input, authorId }: type.MutationCreatePostArgs & { authorId : number } ): Promise<PostResult> => {
         const { title, content } = input;
 
-        const post = await prisma.post.create({
+        const post = await  prisma.post.create({
             data: {
                 title,
                 content,
@@ -15,10 +17,10 @@ class PostService {
             }
         });
 
-        return transformPost(post);
+        return new PostResult(post);
     };
 
-    getPosts = async ({ input, userId }: type.QueryPostListArgs & { id?: number }): Promise<Post[]> => {
+    getPosts = async ({ input, userId }: type.QueryPostListArgs & { id?: number }): Promise<PostResult> => {
         const skip = (input.page - 1) * input.limit;
         const posts = await prisma.post.findMany({
             where: userId ? { authorId: userId } : undefined,
@@ -28,10 +30,10 @@ class PostService {
             include: { author: true, },
         });
 
-        return posts.map(transformPost);
+        return new PostResult(posts);
     };
 
-    getPostById = async ({ postId, author = false } : { postId: number; author?: boolean}): Promise<Post> => {
+    getPostById = async ({ postId, author = false } : { postId: number; author?: boolean}): Promise<PostResult> => {
         const post = await prisma.post.findUnique({
             where: { id: postId },
             include: { author },
@@ -41,10 +43,10 @@ class PostService {
             throw new Error("NOT_FOUND");
         }
 
-        return transformPost(post);
+        return new PostResult(post);
     };
 
-    isMyPost = async (userId: number, postId: number): Promise<Post> => {
+    isMyPost = async (userId: number, postId: number): Promise<PostResult> => {
         const post = await prisma.post.findUnique({
             where: { id: postId },
             // include: { author: true}
@@ -58,18 +60,19 @@ class PostService {
             throw new Error("FORBIDDEN");
         }
 
-        return transformPost(post);
+        return new PostResult(post);
     };
 
-    updatePost = async ({ input, postId } : type.PostMutationUpdatePostArgs & { postId: number } ): Promise<Post> => {
-        const post = await prisma.post.update({ where: {id: postId}, data: input, });
-        return transformPost(post);
+    updatePost = async ({ input, postId } : type.PostMutationUpdatePostArgs & { postId: number } ): Promise<PostResult> => {
+        const post = await prisma.post.update({where: {id: postId}, data: input,});
+        return new PostResult(post);
     };
 
-    deletePost = async (postId: number): Promise<Post> => {
-        const post = await  prisma.post.delete({ where: { id: postId }, });
-        return transformPost(post);
+    deletePost = async (postId: number): Promise<PostResult> => {
+        const post = await prisma.post.delete({where: {id: postId},});
+        return new PostResult(post);
     };
+
 }
 
 export default PostService;

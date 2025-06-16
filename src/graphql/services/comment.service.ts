@@ -1,6 +1,6 @@
 import * as type from "../types";
 
-import { CommentResult } from "./result";
+import {CommentResult, CommentResultArray} from "./result";
 
 import prisma from "@/lib/prisma";
 
@@ -28,7 +28,7 @@ class CommentService {
     getComments = async ({
                              postId,
                              input,
-                         }: type.PostQueryCommentsArgs & { postId: number }): Promise<CommentResult> => {
+                         }: type.PostQueryCommentsArgs & { postId: number }): Promise<CommentResultArray> => {
         const skip = (input.page - 1) * input.limit;
 
         const comments = await prisma.comment.findMany({
@@ -39,7 +39,7 @@ class CommentService {
             include: { author: true },
         });
 
-        return new CommentResult(comments);
+        return new CommentResultArray(comments);
     };
 
     /**

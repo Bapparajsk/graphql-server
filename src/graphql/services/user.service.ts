@@ -1,7 +1,9 @@
 import {customError} from "@graphql/helper";
-import { UserResult } from "./result";
 
 import * as type from "../types";
+
+import {UserResult, UserResultArray} from "./result";
+
 
 import prisma, { User } from "@/lib/prisma";
 
@@ -33,7 +35,7 @@ class UserController {
     }
 
 
-    getUsers = async ({ id, page, limit }: type.GetInputs & { id: number }): Promise<UserResult> => {
+    getUsers = async ({ id, page, limit }: type.GetInputs & { id: number }): Promise<UserResultArray> => {
         const skip = (page - 1) * limit;
         const users = await prisma.user.findMany({
             where: { id: { not: id,  } },
@@ -42,7 +44,7 @@ class UserController {
             orderBy: { id: "asc" },
         });
 
-        return new UserResult(users);
+        return new UserResultArray(users);
     };
 
     setUserVerified = (id: number): Promise<User> => {

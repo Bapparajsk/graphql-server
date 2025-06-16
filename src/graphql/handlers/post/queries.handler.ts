@@ -17,10 +17,13 @@ export const postList: QueryResolvers["postList"] = async (_, { userId, input },
         // Validate the input using the getInputsSchema
         const validInput = tools.zodValidator.isGetInputs(input);
 
-        const posts = await services.post.getPosts({
+        const postResultArray = await services.post.getPosts({
             input: validInput,
             userId: userId
         });
+
+        const posts = postResultArray.transform();
+
         const hasNextPage = posts.length === input.limit;
 
         return { posts, hashNext: hasNextPage };
@@ -40,9 +43,9 @@ export const postList: QueryResolvers["postList"] = async (_, { userId, input },
 export const postQuery: QueryResolvers["post"] = async (_, { postId }, { services, tools }) => {
     try {
         await tools.isAuthenticated();
-        const post =  await services.post.getPostById({postId});
+        const postResult =  await services.post.getPostById({postId});
 
-        return { post };
+        return { post: postResult.transform() };
     } catch (e) {
         throw customErrors(e, [{
             code: "NOT_FOUND",

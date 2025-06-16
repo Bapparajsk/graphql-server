@@ -1,4 +1,5 @@
-import {PostResult} from "@graphql/services/result";
+import {customError} from "@graphql/helper";
+import {PostResult, PostResultArray} from "@graphql/services/result";
 
 import * as type from "../types";
 
@@ -20,7 +21,7 @@ class PostService {
         return new PostResult(post);
     };
 
-    getPosts = async ({ input, userId }: type.QueryPostListArgs & { id?: number }): Promise<PostResult> => {
+    getPosts = async ({ input, userId }: type.QueryPostListArgs & { id?: number }): Promise<PostResultArray> => {
         const skip = (input.page - 1) * input.limit;
         const posts = await prisma.post.findMany({
             where: userId ? { authorId: userId } : undefined,
@@ -30,7 +31,7 @@ class PostService {
             include: { author: true, },
         });
 
-        return new PostResult(posts);
+        return new PostResultArray(posts);
     };
 
     getPostById = async ({ postId, author = false } : { postId: number; author?: boolean}): Promise<PostResult> => {
@@ -40,7 +41,11 @@ class PostService {
         });
 
         if (!post) {
-            throw new Error("NOT_FOUND");
+            throw customError({
+                code: "NOT_FOUND",
+                message: "Post not found",
+                status: 404
+            });
         }
 
         return new PostResult(post);
@@ -53,11 +58,19 @@ class PostService {
         });
 
         if (!post) {
-            throw new Error("NOT_FOUND");
+            throw customError({
+                code: "NOT_FOUND",
+                message: "Post not found",
+                status: 404
+            });
         }
 
         if (post.authorId !== userId) {
-            throw new Error("FORBIDDEN");
+            throw customError({
+                code: "FORBIDDEN",
+                message: "You are not authorized to access this post",
+                status: 403
+            });
         }
 
         return new PostResult(post);

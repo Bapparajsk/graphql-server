@@ -1,73 +1,97 @@
 import { Post, User, Comment } from "@/lib/prisma";
-import { transformPost, transformUser, transformComment } from "@/lib/transformers";
+import {
+    transformPost,
+    transformUser,
+    transformComment,
+    TransformedPost,
+    TransformedComment,
+    TransformedUser,
+} from "@/lib/transformers";
 
-// Used to add optional author to Post or Comment types
-type Author = {
-    author?: User;
-};
+// Add optional author field to Post or Comment
+type Author = { author?: User };
 
 export type PostWithAuthor = Post & Author;
 export type CommentWithAuthor = Comment & Author;
 
-/**
- * Handles transformation and access for single or multiple PostWithAuthor items
- */
-class PostResult {
-    constructor(private readonly item: PostWithAuthor | PostWithAuthor[]) {}
+/** Base class to wrap a single item and apply transformation */
+class Result<T, Transformed> {
+    constructor(
+        private readonly item: T,
+        private readonly transformer: (item: T) => Transformed
+    ) {}
 
-    // Returns raw post(s)
-    get raw() {
+    raw(): T {
         return this.item;
     }
 
-    // Returns transformed post(s)
-    transform() {
-        return Array.isArray(this.item)
-            ? this.item.map(transformPost)
-            : transformPost(this.item);
+    get value(): T {
+        return this.raw();
+    }
+
+    transform(): Transformed {
+        return this.transformer(this.item);
     }
 }
 
-/**
- * Handles transformation and access for single or multiple CommentWithAuthor items
- */
-class CommentResult {
-    constructor(private readonly item: CommentWithAuthor | CommentWithAuthor[]) {}
+/** Base class to wrap an array of items and apply transformation */
+class ResultArray<T, Transformed> {
+    constructor(
+        private readonly items: T[],
+        private readonly transformer: (item: T) => Transformed
+    ) {}
 
-    // Returns raw comment(s)
-    get raw() {
-        return this.item;
+    raw(): T[] {
+        return this.items;
     }
 
-    // Returns transformed comment(s)
-    transform() {
-        return Array.isArray(this.item)
-            ? this.item.map(transformComment)
-            : transformComment(this.item);
+    get value(): T[] {
+        return this.raw();
+    }
+
+    transform(): Transformed[] {
+        return this.items.map(this.transformer);
     }
 }
 
-/**
- * Handles transformation and access for single or multiple User items
- */
-class UserResult {
-    constructor(private readonly item: User | User[]) {}
-
-    // Returns raw user(s)
-    get raw() {
-        return this.item;
+/** Post wrapper classes */
+class PostResult extends Result<PostWithAuthor, TransformedPost> {
+    constructor(item: PostWithAuthor) {
+        super(item, transformPost);
     }
+}
+class PostResultArray extends ResultArray<PostWithAuthor, TransformedPost> {
+    constructor(items: PostWithAuthor[]) {
+        super(items, transformPost);
+    }
+}
 
-    // Returns transformed user(s)
-    transform() {
-        return Array.isArray(this.item)
-            ? this.item.map(transformUser)
-            : transformUser(this.item);
+/** Comment wrapper classes */
+class CommentResult extends Result<CommentWithAuthor, TransformedComment> {
+    constructor(item: CommentWithAuthor) {
+        super(item, transformComment);
+    }
+}
+class CommentResultArray extends ResultArray<CommentWithAuthor, TransformedComment> {
+    constructor(items: CommentWithAuthor[]) {
+        super(items, transformComment);
+    }
+}
+
+/** User wrapper classes */
+class UserResult extends Result<User, TransformedUser> {
+    constructor(item: User) {
+        super(item, transformUser);
+    }
+}
+class UserResultArray extends ResultArray<User, TransformedUser> {
+    constructor(items: User[]) {
+        super(items, transformUser);
     }
 }
 
 export {
-    PostResult,
-    CommentResult,
-    UserResult
+    PostResult, PostResultArray,
+    CommentResult, CommentResultArray,
+    UserResult, UserResultArray,
 };

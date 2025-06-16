@@ -11,7 +11,10 @@ export const user: QueryResolvers["user"] = async (_, { input }, { services, too
         // Validate the input using the getInputsSchema
         const { limit, page } = tools.zodValidator.isGetInputs(input);
 
-        const users =  await services.user.getUsers({limit, page, id: user.id});
+        const userResultArray = await services.user.getUsers({limit, page, id: user.id});
+
+        const users = userResultArray.transform();
+
         const hasNextPage = users.length === input.limit;
 
         return { users, hashNext: hasNextPage };

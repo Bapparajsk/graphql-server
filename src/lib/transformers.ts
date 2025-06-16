@@ -22,9 +22,9 @@ type Transformed = {
     updatedAt: string;
 }
 
-type TransformedPost = Omit<Post, "createdAt" | "updatedAt"> & Transformed & Author;
-type TransformedComment = Omit<Comment, "createdAt" | "updatedAt"> & Transformed & Author;
-type TransformedUser = Omit<User, "createdAt" | "updatedAt"> & Transformed;
+export type TransformedPost = Omit<Post, "createdAt" | "updatedAt"> & Transformed & Author;
+export type TransformedComment = Omit<Comment, "createdAt" | "updatedAt"> & Transformed & Author;
+export type TransformedUser = Omit<User, "createdAt" | "updatedAt"> & Transformed;
 
 type Author = {
     author?: TransformedUser;

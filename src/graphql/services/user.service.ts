@@ -1,4 +1,5 @@
 import {customError} from "@graphql/helper";
+import { UserResult } from "./result";
 
 import * as type from "../types";
 
@@ -7,7 +8,7 @@ import prisma, { User } from "@/lib/prisma";
 
 class UserController {
 
-    async getUserById(id: number): Promise<User> {
+    async getUserById(id: number): Promise<UserResult> {
         const user = await prisma.user.findUnique({
             where: { id }
         });
@@ -16,10 +17,10 @@ class UserController {
             throw customError("USER_NOT_FOUND");
         }
 
-        return user;
+        return new UserResult(user);
     }
 
-    async getUserByEmail(email: string): Promise<User>  {
+    async getUserByEmail(email: string): Promise<UserResult>  {
         const user = await prisma.user.findUnique({
             where: { email }
         });
@@ -28,22 +29,20 @@ class UserController {
             throw customError("USER_NOT_FOUND");
         }
 
-        return user;
+        return new UserResult(user);
     }
 
-    // ! only for testing purposes
-    getAllUsers(): Promise<User[]> {
-        return prisma.user.findMany();
-    }
 
-    getUsers = ({ id, page, limit }: type.GetInputs & { id: number }): Promise<User[]> => {
+    getUsers = async ({ id, page, limit }: type.GetInputs & { id: number }): Promise<UserResult> => {
         const skip = (page - 1) * limit;
-        return prisma.user.findMany({
+        const users = await prisma.user.findMany({
             where: { id: { not: id,  } },
             skip,
             take: limit,
             orderBy: { id: "asc" },
         });
+
+        return new UserResult(users);
     };
 
     setUserVerified = (id: number): Promise<User> => {

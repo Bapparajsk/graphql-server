@@ -125,7 +125,7 @@ class AuthService {
                 code: "OTP_NOT_FOUND",
                 message: "OTP not found for the given identifier and purpose",
                 status: 404,
-            })
+            });
         }
 
         return JSON.parse(otpDetails) as OtpDetails;

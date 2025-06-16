@@ -1,24 +1,36 @@
 import * as type from "../types";
 
-import prisma, { Comment } from "@/lib/prisma";
-import {transformComment} from "@/lib/transformers";
+import { CommentResult } from "./result";
 
+import prisma from "@/lib/prisma";
+
+/**
+ * Service class to handle comment-related database operations
+ */
 class CommentService {
-    getComment = async (commentId: number) => {
+    /**
+     * Fetch a single comment by ID with its author
+     */
+    getComment = async (commentId: number): Promise<CommentResult> => {
         const comment = await prisma.comment.findUnique({
             where: { id: commentId },
             include: { author: true },
         });
 
-        if (!comment) {
-            throw new Error("COMMENT_NOT_FOUND");
-        }
+        if (!comment) throw new Error("COMMENT_NOT_FOUND");
 
-        return transformComment(comment);
+        return new CommentResult(comment);
     };
 
-    getComments = async ({ postId , input }: type.PostQueryCommentsArgs & { postId: number }): Promise<type.Comment[]> => {
+    /**
+     * Fetch paginated comments for a given post
+     */
+    getComments = async ({
+                             postId,
+                             input,
+                         }: type.PostQueryCommentsArgs & { postId: number }): Promise<CommentResult> => {
         const skip = (input.page - 1) * input.limit;
+
         const comments = await prisma.comment.findMany({
             where: { postId },
             skip,
@@ -27,11 +39,22 @@ class CommentService {
             include: { author: true },
         });
 
-        return comments.map(comment => transformComment(comment, comment.author));
+        return new CommentResult(comments);
     };
 
-    addComment = async ({ postId, user, comment }: { postId: number, user: type.User, comment: string }): Promise<type.Comment> => {
-        const com = await prisma.comment.create({
+    /**
+     * Create a new comment on a post by a user
+     */
+    addComment = async ({
+                            postId,
+                            user,
+                            comment,
+                        }: {
+        postId: number;
+        user: type.User;
+        comment: string;
+    }): Promise<CommentResult> => {
+        const newComment = await prisma.comment.create({
             data: {
                 comment,
                 postId,
@@ -39,22 +62,36 @@ class CommentService {
             },
         });
 
-        return transformComment(com, user);
+        return new CommentResult(newComment);
     };
 
-    updateComment = async ({ user, commentId, comment }: {postId: number, user: type.User, commentId: number, comment: string }): Promise<type.Comment> => {
-        const com = await prisma.comment.update({
+    /**
+     * Update an existing comment's content
+     */
+    updateComment = async ({
+                               commentId,
+                               comment,
+                           }: {
+        commentId: number;
+        comment: string;
+    }): Promise<CommentResult> => {
+        const updatedComment = await prisma.comment.update({
             where: { id: commentId },
             data: { comment },
         });
 
-        return transformComment(com, user);
+        return new CommentResult(updatedComment);
     };
 
-    deleteComment = async (commentId: number) => {
-        await prisma.comment.delete({
+    /**
+     * Delete a comment by ID
+     */
+    deleteComment = async (commentId: number): Promise<CommentResult> => {
+        const deletedComment = await prisma.comment.delete({
             where: { id: commentId },
         });
+
+        return new CommentResult(deletedComment);
     };
 }
 

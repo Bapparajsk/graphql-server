@@ -3,6 +3,7 @@ import * as type from "../types";
 import {CommentResult, CommentResultArray} from "./result";
 
 import prisma from "@/lib/prisma";
+import {customError} from "@graphql/helper";
 
 /**
  * Service class to handle comment-related database operations
@@ -17,7 +18,13 @@ class CommentService {
             include: { author: true },
         });
 
-        if (!comment) throw new Error("COMMENT_NOT_FOUND");
+        if (!comment) {
+            throw customError({
+                code: "COMMENT_NOT_FOUND",
+                message: "Comment not found",
+                status: 404,
+            });
+        }
 
         return new CommentResult(comment);
     };
@@ -71,12 +78,15 @@ class CommentService {
     updateComment = async ({
                                commentId,
                                comment,
+                                isAuthor = false,
                            }: {
         commentId: number;
         comment: string;
+        isAuthor?: boolean; // Optional, defaults to false
     }): Promise<CommentResult> => {
         const updatedComment = await prisma.comment.update({
             where: { id: commentId },
+            include: { author: isAuthor },
             data: { comment },
         });
 

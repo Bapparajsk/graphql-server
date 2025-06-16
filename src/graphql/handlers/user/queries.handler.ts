@@ -1,35 +1,31 @@
-import {customError} from "@graphql/helper";
 import {QueryResolvers} from "@graphql/types";
-import {JsonWebTokenError} from "jsonwebtoken";
-import {ZodError} from "zod/v4";
 
-export const user: QueryResolvers["user"] = async (_, { input }, { services, tools }) => {
-    try {
-        // Ensure the services is authenticated
+import {tryCatch} from "@/lib/try-catch";
+
+// Resolver function for the 'user' query
+export const user: QueryResolvers["user"] = async (parent, { input }, { services, tools }) => {
+    return tryCatch(async () => {
+        // Ensure the user is authenticated and get the current user object
         const user = await tools.isAuthenticated();
 
-        // Validate the input using the getInputsSchema
+        // Validate and extract 'limit' and 'page' values from input using Zod schema
         const { limit, page } = tools.zodValidator.isGetInputs(input);
 
-        const userResultArray = await services.user.getUsers({limit, page, id: user.id});
+        // Fetch paginated users based on the current user's ID
+        const userResultArray = await services.user.getUsers({
+            limit,
+            page,
+            id: user.id,
+        });
 
+        // Transform raw user data into client-safe structure (e.g., remove sensitive info)
         const users = userResultArray.transform();
 
+        // Determine if there’s a next page based on the number of returned users
         const hasNextPage = users.length === input.limit;
 
+        // Return the transformed users and pagination info
         return { users, hashNext: hasNextPage };
-    } catch (e) {
-        console.error("Error in getUsers query:", e);
-
-        if (e instanceof ZodError) {
-            // Handle validation errors
-            throw customError("BAD_USER_INPUT", e.message);
-        }
-
-        if (e instanceof JsonWebTokenError) {
-            throw customError("UNAUTHORIZED");
-        }
-
-        throw customError("INTERNAL_SERVER_ERROR");
-    }
+    });
 };
+

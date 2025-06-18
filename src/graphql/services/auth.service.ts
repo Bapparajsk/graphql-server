@@ -2,6 +2,7 @@ import crypto, { randomInt } from "node:crypto";
 import { promisify } from "util";
 
 import {customError} from "@graphql/helper";
+import {UserResult} from "@graphql/services/result";
 
 import { PrismaClientKnownRequestError } from "../../../generated/prisma/runtime/library";
 import prisma, { User } from "../../lib/prisma";
@@ -51,10 +52,10 @@ class AuthService {
         return derivedKey.toString("hex") === hash;
     }
 
-    async createUser({ input }: MutationCreateUserArgs): Promise<User> {
+    async createUser({ input }: MutationCreateUserArgs): Promise<UserResult> {
         try {
             const { salt, hash } = await this.#hashPassword(input.password);
-            return prisma.user.create({
+            const newUser = await prisma.user.create({
                 data: {
                     email: input.email,
                     name: input.name,
@@ -62,11 +63,19 @@ class AuthService {
                     salt // Store the salt for future password verification
                 }
             });
+
+            return new UserResult(newUser);
         } catch (e) {
+            console.log(e);
             if (e instanceof PrismaClientKnownRequestError) {
+                // console.log(e);
                 if (e.code === "P2002") {
                     // Unique constraint failed
-                    throw new Error("EMAIL_ALREADY_EXISTS");
+                    throw customError({
+                        code: "USER_ALREADY_EXISTS",
+                        message: "User with this email already exists",
+                        status: 400
+                    });
                 }
             }
 

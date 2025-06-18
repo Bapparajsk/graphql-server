@@ -1,10 +1,10 @@
+import {UserResult} from "@graphql/services/result";
 import { Request, Response } from "express";
 
 import {UserService, PostService, AuthService, CommentService} from "./services";
 import Jwt from "./tools/JWT";
 import {ZodValidator} from "./tools/zod";
 
-import {User} from "@/lib/prisma";
 
 export type Context = {
     services : {
@@ -16,7 +16,7 @@ export type Context = {
     tools: {
         jsonWebToken: Jwt,
         zodValidator: ZodValidator,
-        isAuthenticated: () => Promise<User>;
+        isAuthenticated: () => Promise<UserResult>;
     };
     request: Request;
     response: Response;

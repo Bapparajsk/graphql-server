@@ -1,7 +1,8 @@
-import { Context } from "../context";
-import {User} from "../types";
+import {UserResult} from "@graphql/services/result";
 
-export async function isAuthenticated  (context: Context): Promise<User>{
+import { Context } from "../context";
+
+export async function isAuthenticated  (context: Context): Promise<UserResult>{
     const { services, tools, request } = context;
 
     // const token = req.cookies?.authToken || "";

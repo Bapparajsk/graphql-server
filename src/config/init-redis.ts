@@ -4,7 +4,7 @@ const connection = {
 };
 
 const queue_names = {
-    EMAIL: process.env.SEND_EMAIL_QUEUE || "myapp:send-email-queue"
+    EMAIL: process.env.SEND_EMAIL_QUEUE || "myapp@send-email-queue"
     // Add more queues here as needed
 };
 

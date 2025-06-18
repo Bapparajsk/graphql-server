@@ -6,7 +6,7 @@ import {tryCatch} from "@/lib/try-catch";
 export const user: QueryResolvers["user"] = async (parent, { input }, { services, tools }) => {
     return tryCatch(async () => {
         // Ensure the user is authenticated and get the current user object
-        const user = await tools.isAuthenticated();
+        const { value: user } = await tools.isAuthenticated();
 
         // Validate and extract 'limit' and 'page' values from input using Zod schema
         const { limit, page } = tools.zodValidator.isGetInputs(input);

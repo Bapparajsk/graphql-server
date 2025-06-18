@@ -10,7 +10,7 @@ export const createUser: MutationResolvers["createUser"] = async (_, { input }, 
         const inputData = tools.zodValidator.isRegister(input);
 
         // 👤 Create the user via the auth service
-        const user = await services.auth.createUser({ input: inputData });
+        const { value: user } = await services.auth.createUser({ input: inputData });
 
         // 🔏 Generate a JWT token using the user's ID and name
         const token = tools.jsonWebToken.sign({ id: user.id, name: user.name });
@@ -54,7 +54,7 @@ export const sendOtp: MutationResolvers["sendOtp"] = async (_, { input }, { serv
             await tools.isAuthenticated();
         }
 
-        const [, user] = await Promise.all([
+        const [, { value: user }] = await Promise.all([
             // ⏱️ Throttle OTP resends to prevent spamming (1-minute cooldown)
             services.auth.isValidThrottle({ identifier: validEmail, purpose }),
 
@@ -91,7 +91,7 @@ export const sendOtp: MutationResolvers["sendOtp"] = async (_, { input }, { serv
 export const verifyOtp: MutationResolvers["verifyOtp"] = async (_, { input }, { services, tools }) => {
     return tryCatch(async () => {
         // 🔐 Ensure the user is authenticated before verifying the OTP
-        const user = await tools.isAuthenticated();
+        const { value: user} = await tools.isAuthenticated();
 
         // 📨 Extract input values: OTP, identifier (email), and purpose
         const { otp, identifier, purpose } = input;

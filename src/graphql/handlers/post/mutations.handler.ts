@@ -7,7 +7,7 @@ import {tryCatch} from "@/lib/try-catch";
 export const createPost: MutationResolvers["createPost"] = async (parent, { input }, { services, tools }) => {
     return tryCatch(async () => {
         // Ensure the user is authenticated and retrieve the current user (author)
-        const author = await tools.isAuthenticated();
+        const { value: author } = await tools.isAuthenticated();
 
         // Validate the post creation input using Zod schema
         const isValidInput = tools.zodValidator.isValidCreatePost(input);

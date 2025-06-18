@@ -4,6 +4,7 @@ type User {
     email: String!
     isActive: Boolean!
     isVerified: Boolean!
+    createdAt: String!
 }
 
 input UpdateUserInput {

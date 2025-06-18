@@ -8,7 +8,6 @@ import { PrismaClientKnownRequestError } from "../../../generated/prisma/runtime
 import prisma, { User } from "../../lib/prisma";
 import {MutationCreateUserArgs, MutationSignInArgs} from "../types";
 
-import transporter from "@/config/nodemailer.config";
 import redis from "@/config/redis.config";
 
 interface HashPassword {
@@ -180,12 +179,7 @@ class AuthService {
 
     async sendOtp({ identifier, otp }: { identifier: string; otp: string }) {
         try {
-            await transporter.sendMail({
-                from: process.env.TRANSPORTER_USER || "your email",
-                to: identifier,
-                subject: "OTP",
-                text: `Your OTP is ${otp}`,
-            });
+
         } catch (e) {
             console.log("Error sending OTP:", e);
             throw new Error("ERROR_SENDING_OTP");

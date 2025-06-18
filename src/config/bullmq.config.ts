@@ -6,7 +6,7 @@ const QueueConfig: QueueOptions = { connection };
 
 const WorkerConfig: WorkerOptions = {
     connection,
-    removeOnComplete: { age: 5 * 60 * 1000 }, // Remove completed jobs after 5 minutes
+    removeOnComplete: { count: 1 }, // Remove completed jobs after 1 completion
 };
 
 export const createWorker = (name: string, processFunction: (job: Job) => Promise<void>) => {

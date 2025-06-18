@@ -1,14 +1,22 @@
-import { createWorker, queue_names } from "@/config/bullmq.config";
+import { readFile } from "fs/promises";
+import path from "path";
+
+import {createWorker, queue_names} from "@/config/bullmq.config";
+import transporter from "@/config/nodemailer.config";
 
 createWorker(queue_names.EMAIL, async (job) => {
     const { email, otp } = job.data;
 
-    // Simulate sending an email
-    console.log(`Sending OTP ${otp} to email: ${email}`);
 
-    // Here you would integrate with your email service to send the actual email
-    // For example, using nodemailer or any other email service provider
+    const filePath = path.resolve(__dirname, "../../template/otp.html");
+    const htmlTemplate = await readFile(filePath, "utf-8");
 
-    // Simulate a successful job completion
-    return Promise.resolve();
+    const htmlContent = htmlTemplate.replace("{{otp}}", otp);
+
+    await transporter.sendMail({
+        from: process.env.TRANSPORTER_USER || "your email",
+        to: email,
+        subject: "🔐 Your One-Time Password (OTP) for Verification",
+        html: htmlContent,
+    });
 });

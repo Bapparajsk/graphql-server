@@ -63,6 +63,7 @@ export type Mutation = {
   post?: Maybe<PostMutation>;
   sendOtp: SuccessResponse;
   signIn: AuthResponse;
+  testMutation: Scalars['String']['output'];
   user?: Maybe<UserMutation>;
   verifyOtp: SuccessResponse;
 };
@@ -90,6 +91,12 @@ export type MutationSendOtpArgs = {
 
 export type MutationSignInArgs = {
   input?: InputMaybe<SignInInput>;
+};
+
+
+export type MutationTestMutationArgs = {
+  email: Scalars['String']['input'];
+  otp: Scalars['String']['input'];
 };
 
 
@@ -217,6 +224,7 @@ export type UpdateUserInput = {
 
 export type User = {
   __typename?: 'User';
+  createdAt: Scalars['String']['output'];
   email: Scalars['String']['output'];
   id: Scalars['Int']['output'];
   isActive: Scalars['Boolean']['output'];
@@ -402,6 +410,7 @@ export type MutationResolvers<ContextType = Context, ParentType extends Resolver
   post?: Resolver<Maybe<ResolversTypes['PostMutation']>, ParentType, ContextType, RequireFields<MutationPostArgs, 'id'>>;
   sendOtp?: Resolver<ResolversTypes['SuccessResponse'], ParentType, ContextType, RequireFields<MutationSendOtpArgs, 'input'>>;
   signIn?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, Partial<MutationSignInArgs>>;
+  testMutation?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationTestMutationArgs, 'email' | 'otp'>>;
   user?: Resolver<Maybe<ResolversTypes['UserMutation']>, ParentType, ContextType, RequireFields<MutationUserArgs, 'id'>>;
   verifyOtp?: Resolver<ResolversTypes['SuccessResponse'], ParentType, ContextType, RequireFields<MutationVerifyOtpArgs, 'input'>>;
 };
@@ -452,6 +461,7 @@ export type SuccessResponseResolvers<ContextType = Context, ParentType extends R
 };
 
 export type UserResolvers<ContextType = Context, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
+  createdAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   isActive?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;

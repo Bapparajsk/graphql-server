@@ -9,7 +9,8 @@
     "start": "npm run compile && nodemon ./dist/index.js",
     "test": "jest",
     "generate": "graphql-codegen --watch",
-    "lint": "eslint . --ext .ts,.js"
+    "lint": "eslint . --ext .ts,.js",
+    "text-bullmq": "node test/add-email.js"
   },
   "dependencies": {
     "@apollo/datasource-rest": "^6.4.1",

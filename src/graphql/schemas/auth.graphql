@@ -2,6 +2,12 @@ type AuthResponse {
     message: String
 }
 
+type CreateUserResponse {
+    user: User!
+    token: String!
+    message: String
+}
+
 input SignInInput {
     email: String!
     password: String!
@@ -15,7 +21,6 @@ input CreateUserInput {
 
 input SendOtpInput {
     identifier: String! # email or phone
-    type: String!       # "email" or "phone"
     purpose: String!    # "register" or "login"
 }
 

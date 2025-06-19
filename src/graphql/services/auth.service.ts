@@ -129,20 +129,18 @@ class AuthService {
 
     async getOtpDetails({ identifier, purpose }: { identifier: string; purpose: string }) {
         const otpDetails = await redis.get(`${purpose}:${identifier}`);
-        if (!otpDetails) {
-            throw customError({
-                code: "OTP_NOT_FOUND",
-                message: "OTP not found for the given identifier and purpose",
-                status: 404,
-            });
-        }
-
         return JSON.parse(otpDetails) as OtpDetails;
     }
 
     async isValidThrottle ({ identifier, purpose }: { identifier: string; purpose: string }) {
-        const { resendTimeLimit } = await this.getOtpDetails({ identifier, purpose });
+        const otpDetails = await this.getOtpDetails({ identifier, purpose });
+
+        if(!otpDetails) {
+            return true; // No OTP details found, proceed with sending OTP
+        }
+
         const currentDate = new Date();
+        const { resendTimeLimit } = otpDetails;
 
         if (resendTimeLimit && resendTimeLimit > currentDate.getTime()) {
             throw customError({
@@ -160,10 +158,19 @@ class AuthService {
     }
 
     async verifyOtp({ identifier, otp, purpose }: { identifier: string; otp: string; purpose: string }) {
-        const { otp: savedOtp, otpExpires } = await this.getOtpDetails({ identifier, purpose });
+        const otpDetails = await this.getOtpDetails({ identifier, purpose });
+
+        if(!otpDetails) {
+            throw customError({
+                code: "OTP_NOT_FOUND",
+                message: "OTP not found or has expired",
+                status: 404,
+            });
+        }
+
         const currentDate = new Date();
 
-        if (currentDate > new Date(otpExpires)) {
+        if (currentDate > new Date(otpDetails.otpExpires)) {
             throw customError({
                 code: "OTP_EXPIRED",
                 message: "OTP has expired",
@@ -171,7 +178,7 @@ class AuthService {
             });
         }
 
-        if(savedOtp !== otp) {
+        if(otpDetails.otp !== otp) {
             throw customError({
                 code: "INVALID_OTP",
                 message: "Invalid OTP",

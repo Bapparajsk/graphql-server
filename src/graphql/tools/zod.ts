@@ -36,6 +36,9 @@ interface InputData {
     limit?: number;
     title?: string;
     content?: string;
+    otp?: string;
+    identifier?: string;
+    purpose?: "LOGIN" | "REGISTER";
 }
 
 // Validator class
@@ -78,6 +81,14 @@ class ZodValidator {
         return z.object({
             comment: z.string().min(1, "Comment content is required")
         }).parse({comment});
+    }
+
+    isValidOtp(input: InputData) {
+        return z.object({
+            otp: z.string().length(6, "OTP must be exactly 6 digits"),
+            identifier: z.email("Invalid email format"),
+            purpose: z.enum(["LOGIN" , "REGISTER"]),
+        }).parse(input);
     }
 }
 

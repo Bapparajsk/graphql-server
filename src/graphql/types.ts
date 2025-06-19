@@ -19,8 +19,7 @@ export type Scalars = {
 
 export type AuthResponse = {
   __typename?: 'AuthResponse';
-  token: Scalars['String']['output'];
-  user: User;
+  message?: Maybe<Scalars['String']['output']>;
 };
 
 export type Comment = {
@@ -45,6 +44,13 @@ export type CreateUserInput = {
   password: Scalars['String']['input'];
 };
 
+export type CreateUserResponse = {
+  __typename?: 'CreateUserResponse';
+  message?: Maybe<Scalars['String']['output']>;
+  token: Scalars['String']['output'];
+  user: User;
+};
+
 export type GetCommentsResponse = {
   __typename?: 'GetCommentsResponse';
   comments?: Maybe<Array<Comment>>;
@@ -59,7 +65,7 @@ export type GetInputs = {
 export type Mutation = {
   __typename?: 'Mutation';
   createPost: Post;
-  createUser: AuthResponse;
+  createUser: CreateUserResponse;
   post?: Maybe<PostMutation>;
   sendOtp: SuccessResponse;
   signIn: AuthResponse;
@@ -199,7 +205,6 @@ export type QueryUserArgs = {
 export type SendOtpInput = {
   identifier: Scalars['String']['input'];
   purpose: Scalars['String']['input'];
-  type: Scalars['String']['input'];
 };
 
 export type SignInInput = {
@@ -209,8 +214,10 @@ export type SignInInput = {
 
 export type SuccessResponse = {
   __typename?: 'SuccessResponse';
-  message?: Maybe<Scalars['String']['output']>;
+  message: Scalars['String']['output'];
   success: Scalars['Boolean']['output'];
+  token?: Maybe<Scalars['String']['output']>;
+  user?: Maybe<User>;
 };
 
 export type UpdatePostInput = {
@@ -331,6 +338,7 @@ export type ResolversTypes = {
   Comment: ResolverTypeWrapper<Comment>;
   CreatePostInput: CreatePostInput;
   CreateUserInput: CreateUserInput;
+  CreateUserResponse: ResolverTypeWrapper<CreateUserResponse>;
   GetCommentsResponse: ResolverTypeWrapper<GetCommentsResponse>;
   GetInputs: GetInputs;
   Int: ResolverTypeWrapper<Scalars['Int']['output']>;
@@ -360,6 +368,7 @@ export type ResolversParentTypes = {
   Comment: Comment;
   CreatePostInput: CreatePostInput;
   CreateUserInput: CreateUserInput;
+  CreateUserResponse: CreateUserResponse;
   GetCommentsResponse: GetCommentsResponse;
   GetInputs: GetInputs;
   Int: Scalars['Int']['output'];
@@ -382,8 +391,7 @@ export type ResolversParentTypes = {
 };
 
 export type AuthResponseResolvers<ContextType = Context, ParentType extends ResolversParentTypes['AuthResponse'] = ResolversParentTypes['AuthResponse']> = {
-  token?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -398,6 +406,13 @@ export type CommentResolvers<ContextType = Context, ParentType extends Resolvers
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type CreateUserResponseResolvers<ContextType = Context, ParentType extends ResolversParentTypes['CreateUserResponse'] = ResolversParentTypes['CreateUserResponse']> = {
+  message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  token?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type GetCommentsResponseResolvers<ContextType = Context, ParentType extends ResolversParentTypes['GetCommentsResponse'] = ResolversParentTypes['GetCommentsResponse']> = {
   comments?: Resolver<Maybe<Array<ResolversTypes['Comment']>>, ParentType, ContextType>;
   hashNext?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -406,7 +421,7 @@ export type GetCommentsResponseResolvers<ContextType = Context, ParentType exten
 
 export type MutationResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
   createPost?: Resolver<ResolversTypes['Post'], ParentType, ContextType, Partial<MutationCreatePostArgs>>;
-  createUser?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, Partial<MutationCreateUserArgs>>;
+  createUser?: Resolver<ResolversTypes['CreateUserResponse'], ParentType, ContextType, Partial<MutationCreateUserArgs>>;
   post?: Resolver<Maybe<ResolversTypes['PostMutation']>, ParentType, ContextType, RequireFields<MutationPostArgs, 'id'>>;
   sendOtp?: Resolver<ResolversTypes['SuccessResponse'], ParentType, ContextType, RequireFields<MutationSendOtpArgs, 'input'>>;
   signIn?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, Partial<MutationSignInArgs>>;
@@ -455,8 +470,10 @@ export type QueryResolvers<ContextType = Context, ParentType extends ResolversPa
 };
 
 export type SuccessResponseResolvers<ContextType = Context, ParentType extends ResolversParentTypes['SuccessResponse'] = ResolversParentTypes['SuccessResponse']> = {
-  message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  token?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -485,6 +502,7 @@ export type UsersResponseResolvers<ContextType = Context, ParentType extends Res
 export type Resolvers<ContextType = Context> = {
   AuthResponse?: AuthResponseResolvers<ContextType>;
   Comment?: CommentResolvers<ContextType>;
+  CreateUserResponse?: CreateUserResponseResolvers<ContextType>;
   GetCommentsResponse?: GetCommentsResponseResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
   Post?: PostResolvers<ContextType>;

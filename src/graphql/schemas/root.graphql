@@ -5,7 +5,9 @@ input GetInputs {
 
 type SuccessResponse {
     success: Boolean!
-    message: String
+    message: String!
+    user: User
+    token: String
 }
 
 type Query {
@@ -15,7 +17,7 @@ type Query {
 }
 
 type Mutation {
-    createUser(input: CreateUserInput): AuthResponse!
+    createUser(input: CreateUserInput): CreateUserResponse!
     signIn(input: SignInInput): AuthResponse!
 
 #    otp authentication

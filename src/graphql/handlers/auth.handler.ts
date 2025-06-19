@@ -35,7 +35,7 @@ export const createUser: MutationResolvers["createUser"] = async (_, { input }, 
             services.auth.sendOtp({ identifier: user.email, otp: otpDetails.otp }),
 
             // 3️⃣ Update the user's OTP reset attempt count (initially set to 1)
-            services.user.updateUser(user.id, { otpResetCount: 1 })
+            services.user.updateUser(user.id, {otpResetCount: 1 })
         ]);
 
         // 🎉 Return the token and user info to the client
@@ -43,7 +43,7 @@ export const createUser: MutationResolvers["createUser"] = async (_, { input }, 
     });
 };
 
-export const signIn: MutationResolvers["signIn"] = async (_, { input }, { services, tools, response }) => {
+export const signIn: MutationResolvers["signIn"] = async (_, { input }, { services, tools }) => {
     return tryCatch(async () => {
         // 📩 Validate user input (email & password) using Zod schema
         const inputData = tools.zodValidator.isAuth(input);
@@ -61,13 +61,14 @@ export const signIn: MutationResolvers["signIn"] = async (_, { input }, { servic
 
         // 🔑 Generate a new OTP for the user (6-digit code)
         const otpDetails = services.auth.generateOtp();
+        const otpPurpose = "LOGIN";
 
         // 📦 Perform multiple operations concurrently:
         await Promise.all([
-            services.auth.isValidThrottle({ identifier: user.email, purpose: "LOGIN" }),
+            services.auth.isValidThrottle({ identifier: user.email, purpose: otpPurpose }),
 
             // 1️⃣ Save the OTP and its metadata in Redis
-            services.auth.saveOtp({ identifier: user.email, purpose: "REGISTER", otpDetails }),
+            services.auth.saveOtp({ identifier: user.email, purpose: otpPurpose, otpDetails }),
 
             // 2️⃣ Send the OTP to the user's email
             services.auth.sendOtp({ identifier: user.email, otp: otpDetails.otp }),
@@ -89,7 +90,6 @@ export const sendOtp: MutationResolvers["sendOtp"] = async (_, { input }, { serv
         const validEmail = tools.zodValidator.isEmail(identifier);
 
         let userResult: UserResult | null = null;
-
         // 🔐 Ensure the user is authenticated if the OTP is not for login (e.g., for account changes)
         if (purpose !== "LOGIN") {
             userResult = await tools.isAuthenticated();
@@ -104,7 +104,7 @@ export const sendOtp: MutationResolvers["sendOtp"] = async (_, { input }, { serv
 
         } else {
             // LOGIN: Fetch user from DB
-            userResult = await tools.isAuthenticated();
+            userResult = await services.user.getUserByEmail(validEmail);
         }
 
         // 🧑‍💻 Extract the user from the result
@@ -139,13 +139,31 @@ export const sendOtp: MutationResolvers["sendOtp"] = async (_, { input }, { serv
     });
 };
 
-export const verifyOtp: MutationResolvers["verifyOtp"] = async (_, { input }, { services, tools }) => {
+export const verifyOtp: MutationResolvers["verifyOtp"] = async (_, { input }, { services, tools, response }) => {
     return tryCatch(async () => {
-        // 🔐 Ensure the user is authenticated before verifying the OTP
-        const { value: user} = await tools.isAuthenticated();
-
         // 📨 Extract input values: OTP, identifier (email), and purpose
-        const { otp, identifier, purpose } = input;
+        const {otp, identifier, purpose} = tools.zodValidator.isValidOtp(input);
+
+        let userResult: UserResult | null = null;
+        // 🔐 Ensure the user is authenticated if the OTP is not for login (e.g., for account changes)
+        if (purpose !== "LOGIN") {
+            userResult = await tools.isAuthenticated();
+
+            if (userResult.value.email !== identifier) {
+                throw customError({
+                    code: "UNAUTHORIZED",
+                    message: "You are not authorized to perform this action with the provided email.",
+                    status: 403
+                });
+            }
+
+        } else {
+            // LOGIN: Fetch user from DB
+            userResult = await services.user.getUserByEmail(identifier);
+        }
+
+        // 🧑‍💻 Extract the user from the result
+        const user = userResult.value;
 
         // ✅ Verify the OTP with the provided identifier and purpose
         await services.auth.verifyOtp({ identifier, otp, purpose });
@@ -153,10 +171,22 @@ export const verifyOtp: MutationResolvers["verifyOtp"] = async (_, { input }, { 
         // 🟢 Mark the user as verified in the database
         await services.user.setUserVerified(user.id);
 
+        let token: string | undefined = undefined;
+
+        if(purpose === "LOGIN") {
+            // 🔑 Generate a JWT token for the user if the purpose is LOGIN
+            token = tools.jsonWebToken.sign({ id: user.id, name: user.name });
+
+            // 🍪 Set the JWT as an HTTP-only cookie (valid for 2 days)
+            singCookie(token, response);
+        }
+
         // ✅ Return success response
         return {
             success: true,
-            message: "OTP verified successfully"
+            message: "OTP verified successfully",
+            user: purpose === "LOGIN" ? user : undefined,
+            token: token
         };
     });
 };

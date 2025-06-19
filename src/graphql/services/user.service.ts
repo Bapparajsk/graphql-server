@@ -38,7 +38,7 @@ class UserController {
     getUsers = async ({ id, page, limit }: type.GetInputs & { id: number }): Promise<UserResultArray> => {
         const skip = (page - 1) * limit;
         const users = await prisma.user.findMany({
-            where: { id: { not: id,  } },
+            // where: { id: { not: id,  } },
             skip,
             take: limit,
             orderBy: { id: "asc" },

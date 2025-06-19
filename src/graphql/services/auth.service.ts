@@ -9,6 +9,7 @@ import prisma, { User } from "../../lib/prisma";
 import {MutationCreateUserArgs, MutationSignInArgs} from "../types";
 
 import redis from "@/config/redis.config";
+import {sendOTPInEmail} from "@/lib/bullmq/producer";
 
 interface HashPassword {
     salt: string;
@@ -154,6 +155,10 @@ class AuthService {
         return true;
     }
 
+    isValidOtpResetCount(otpResetCount: number): boolean {
+        return otpResetCount <= 5;
+    }
+
     async verifyOtp({ identifier, otp, purpose }: { identifier: string; otp: string; purpose: string }) {
         const { otp: savedOtp, otpExpires } = await this.getOtpDetails({ identifier, purpose });
         const currentDate = new Date();
@@ -179,7 +184,7 @@ class AuthService {
 
     async sendOtp({ identifier, otp }: { identifier: string; otp: string }) {
         try {
-
+            await sendOTPInEmail({ email: identifier, otp });
         } catch (e) {
             console.log("Error sending OTP:", e);
             throw new Error("ERROR_SENDING_OTP");

@@ -6,7 +6,8 @@ import {formatError} from "../tools/zod";
 
 
 export type errorCode = "GRAPHQL_PARSE_FAILED" | "GRAPHQL_VALIDATION_FAILED" | "BAD_USER_INPUT" | "USER_NOT_FOUND" |
-    "PERSISTED_QUERY_NOT_FOUND" | "OPERATION_RESOLUTION_FAILURE" | "BAD_REQUEST" | "INTERNAL_SERVER_ERROR" | "UNAUTHORIZED";
+    "PERSISTED_QUERY_NOT_FOUND" | "OPERATION_RESOLUTION_FAILURE" | "BAD_REQUEST" | "INTERNAL_SERVER_ERROR" | "UNAUTHORIZED" |
+    "OTP_RESET_LIMIT";
 
 export interface ErrorTypes {
     code: errorCode | string;
@@ -59,6 +60,11 @@ const errorCodes: Record<errorCode, ErrorTypes> = {
         code: "USER_NOT_FOUND",
         message: "User not found",
         status: 404,
+    },
+    OTP_RESET_LIMIT: {
+        code: "OTP_RESET_LIMIT",
+        message: "You have exceeded the maximum number of OTP reset attempts. Please contact support.",
+        status: 429,
     }
 };
 

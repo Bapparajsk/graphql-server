@@ -1,3 +1,6 @@
+import {customError} from "@graphql/helper";
+import {UserResult} from "@graphql/services/result";
+
 import {MutationResolvers} from "../types";
 
 import {singCookie} from "@/lib/cookies";
@@ -18,8 +21,25 @@ export const createUser: MutationResolvers["createUser"] = async (_, { input }, 
         // 🍪 Set the JWT as an HTTP-only cookie (valid for 2 days)
         singCookie(token, response);
 
+        // 🔑 Generate a new OTP for the user (6-digit code)
+        const otpDetails = services.auth.generateOtp();
+
+        // 📦 Perform multiple operations concurrently:
+        await Promise.all([
+            services.auth.isValidThrottle({ identifier: user.email, purpose: "REGISTER" }),
+
+            // 1️⃣ Save the OTP and its metadata in Redis
+            services.auth.saveOtp({ identifier: user.email, purpose: "REGISTER", otpDetails }),
+
+            // 2️⃣ Send the OTP to the user's email
+            services.auth.sendOtp({ identifier: user.email, otp: otpDetails.otp }),
+
+            // 3️⃣ Update the user's OTP reset attempt count (initially set to 1)
+            services.user.updateUser(user.id, { otpResetCount: 1 })
+        ]);
+
         // 🎉 Return the token and user info to the client
-        return { token, user };
+        return { token, user, message: "User created successfully. Please verify your email with the OTP sent." };
     });
 };
 
@@ -31,14 +51,33 @@ export const signIn: MutationResolvers["signIn"] = async (_, { input }, { servic
         // 🔍 Attempt to find the user and verify credentials
         const user = await services.auth.singInUser({ input: inputData });
 
-        // 🔏 Generate JWT token with user ID and name
-        const token = tools.jsonWebToken.sign({ id: user.id, name: user.name });
 
-        // 🍪 Set the token as an HTTP-only cookie for client session
-        singCookie(token, response);
+        if(!services.auth.isValidOtpResetCount(user.otpResetCount)) {
+            throw customError("OTP_RESET_LIMIT");
+        }
 
-        // 🎉 Return the authenticated user and token
-        return { token, user };
+        // 🚫 Block request if user has exceeded the allowed OTP reset attempts
+        services.auth.isValidOtpResetCount(user.otpResetCount);
+
+        // 🔑 Generate a new OTP for the user (6-digit code)
+        const otpDetails = services.auth.generateOtp();
+
+        // 📦 Perform multiple operations concurrently:
+        await Promise.all([
+            services.auth.isValidThrottle({ identifier: user.email, purpose: "LOGIN" }),
+
+            // 1️⃣ Save the OTP and its metadata in Redis
+            services.auth.saveOtp({ identifier: user.email, purpose: "REGISTER", otpDetails }),
+
+            // 2️⃣ Send the OTP to the user's email
+            services.auth.sendOtp({ identifier: user.email, otp: otpDetails.otp }),
+
+            // 3️⃣ Update the user's OTP reset attempt count (initially set to 1)
+            services.user.updateUser(user.id, { otpResetCount: user.otpResetCount + 1 })
+        ]);
+
+        // 🎉 Return the token and user info to the client
+        return { message: "Sign-in successful. Please verify your email with the OTP sent." };
     });
 };
 
@@ -49,18 +88,30 @@ export const sendOtp: MutationResolvers["sendOtp"] = async (_, { input }, { serv
         // ✅ Validate the email format and normalize it
         const validEmail = tools.zodValidator.isEmail(identifier);
 
+        let userResult: UserResult | null = null;
+
         // 🔐 Ensure the user is authenticated if the OTP is not for login (e.g., for account changes)
         if (purpose !== "LOGIN") {
-            await tools.isAuthenticated();
+            userResult = await tools.isAuthenticated();
+
+            if (userResult.value.email !== validEmail) {
+                throw customError({
+                    code: "UNAUTHORIZED",
+                    message: "You are not authorized to perform this action with the provided email.",
+                    status: 403
+                });
+            }
+
+        } else {
+            // LOGIN: Fetch user from DB
+            userResult = await tools.isAuthenticated();
         }
 
-        const [, { value: user }] = await Promise.all([
-            // ⏱️ Throttle OTP resends to prevent spamming (1-minute cooldown)
-            services.auth.isValidThrottle({ identifier: validEmail, purpose }),
+        // 🧑‍💻 Extract the user from the result
+        const user = userResult.value;
 
-            // 🔍 Retrieve user by email to check existence and otpResetCount
-            services.user.getUserByEmail(validEmail),
-        ]);
+        // ⏱️ Throttle OTP resends to prevent spamming (1-minute cooldown)
+        await services.auth.isValidThrottle({ identifier: validEmail, purpose });
 
         // 🚫 Block request if user has exceeded the allowed OTP reset attempts
         services.user.isValidOtpResetCount(user.otpResetCount);

@@ -1,6 +1,5 @@
 type AuthResponse {
-    token: String!
-    user: User!
+    message: String
 }
 
 input SignInInput {

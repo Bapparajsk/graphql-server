@@ -18,5 +18,7 @@ createWorker(queue_names.EMAIL, async (job) => {
         to: email,
         subject: "🔐 Your One-Time Password (OTP) for Verification",
         html: htmlContent,
+        // subject: "otp",
+        // text: `Your OTP is ${otp}`,
     });
 });

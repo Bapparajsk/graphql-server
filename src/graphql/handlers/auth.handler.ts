@@ -29,13 +29,13 @@ export const createUser: MutationResolvers["createUser"] = async (_, { input }, 
 
         // 📦 Perform multiple operations concurrently:
         await Promise.all([
-            services.auth.isValidThrottle({ identifier: user.email, purpose: "REGISTER" }),
+            services.auth.isValidThrottle({ identifier: userResult.email, purpose: "REGISTER" }),
 
             // 1️⃣ Save the OTP and its metadata in Redis
-            services.auth.saveOtp({ identifier: user.email, purpose: "REGISTER", otpDetails }),
+            services.auth.saveOtp({ identifier: userResult.email, purpose: "REGISTER", otpDetails }),
 
             // 2️⃣ Send the OTP to the user's email
-            services.auth.sendOtp({ identifier: user.email, otp: otpDetails.otp }),
+            services.auth.sendOtp({ identifier: userResult.email, otp: otpDetails.otp }),
 
             // 3️⃣ Update the user's OTP reset attempt count (initially set to 1)
             services.user.updateUser(user.id, {otpResetCount: 1 })
@@ -53,7 +53,6 @@ export const signIn: MutationResolvers["signIn"] = async (_, { input }, { servic
 
         // 🔍 Attempt to find the user and verify credentials
         const user = await services.auth.singInUser({ input: inputData });
-
 
         if(!services.auth.isValidOtpResetCount(user.otpResetCount)) {
             throw customError("OTP_RESET_LIMIT");

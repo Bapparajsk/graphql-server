@@ -191,6 +191,7 @@ class AuthService {
 
     async sendOtp({ identifier, otp }: { identifier: string; otp: string }) {
         try {
+            console.log("Sending OTP to:", identifier, "OTP:", otp);
             await sendOTPInEmail({ email: identifier, otp });
         } catch (e) {
             console.log("Error sending OTP:", e);

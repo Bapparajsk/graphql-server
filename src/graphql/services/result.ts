@@ -83,6 +83,10 @@ class UserResult extends Result<User, TransformedUser> {
     constructor(item: User) {
         super(item, transformUser);
     }
+
+    get email(): string {
+        return this.value.email;
+    }
 }
 class UserResultArray extends ResultArray<User, TransformedUser> {
     constructor(items: User[]) {

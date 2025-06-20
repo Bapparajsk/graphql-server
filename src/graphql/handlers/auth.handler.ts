@@ -13,7 +13,10 @@ export const createUser: MutationResolvers["createUser"] = async (_, { input }, 
         const inputData = tools.zodValidator.isRegister(input);
 
         // 👤 Create the user via the auth service
-        const { value: user } = await services.auth.createUser({ input: inputData });
+        const userResult = await services.auth.createUser({ input: inputData });
+
+        // 🧑‍💻 Extract the user from the result
+        const user = userResult.transform();
 
         // 🔏 Generate a JWT token using the user's ID and name
         const token = tools.jsonWebToken.sign({ id: user.id, name: user.name });

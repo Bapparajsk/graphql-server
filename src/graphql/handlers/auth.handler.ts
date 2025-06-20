@@ -163,7 +163,7 @@ export const verifyOtp: MutationResolvers["verifyOtp"] = async (_, { input }, { 
         }
 
         // 🧑‍💻 Extract the user from the result
-        const user = userResult.value;
+        const user = userResult.transform();
 
         // ✅ Verify the OTP with the provided identifier and purpose
         await services.auth.verifyOtp({ identifier, otp, purpose });

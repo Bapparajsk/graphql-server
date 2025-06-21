@@ -11,7 +11,7 @@ export type PostId = {
  * Represents a comment's identifier.
  */
 export type CommentType = {
-    commentId: number;
+    comment: string;
 };
 
 /**

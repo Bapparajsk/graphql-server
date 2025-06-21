@@ -4,7 +4,7 @@ import {tryCatch} from "@/lib/try-catch";
 
 
 // Resolver function for the 'createPost' mutation
-export const createPost: MutationResolvers["createPost"] = async (parent, { input }, { services, tools }) => {
+export const createPost: MutationResolvers["createPost"] = async (_parent, { input }, { services, tools }) => {
     return tryCatch(async () => {
         // Ensure the user is authenticated and retrieve the current user (author)
         const { value: author } = await tools.isAuthenticated();
@@ -24,7 +24,7 @@ export const createPost: MutationResolvers["createPost"] = async (parent, { inpu
 };
 
 // Mutation resolver for accessing a specific post and its context (postId, post data, user)
-export const postMutation: MutationResolvers["post"] = async (parent, { id }, { services, tools }) => {
+export const postMutation: MutationResolvers["post"] = async (_parent, { id }, { services, tools }) => {
     return tryCatch(async () => {
         // Ensure the user is authenticated
         const user = await tools.isAuthenticated();
@@ -61,7 +61,7 @@ export const updatePost: PostMutationResolvers["updatePost"] = async ({ postId, 
 };
 
 // Mutation resolver to delete a post
-export const deletePost: PostMutationResolvers["deletePost"] = async ({ postId, user }, args, { services }) => {
+export const deletePost: PostMutationResolvers["deletePost"] = async ({ postId, user }, _args, { services }) => {
     return tryCatch(async () => {
         // Ensure the post belongs to the user
         const { value: post } = await services.post.isMyPost(user.id, postId);

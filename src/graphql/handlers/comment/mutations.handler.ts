@@ -45,7 +45,7 @@ export const addComment: PostMutationResolvers["addComment"] = async (
         // Add the comment with the associated post and user info
         return await services.comment.addComment({
             postId,
-            user,
+            userId: user.id,
             comment: validComment.comment
         });
     });

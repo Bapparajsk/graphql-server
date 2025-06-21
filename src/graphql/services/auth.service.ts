@@ -16,8 +16,6 @@ interface HashPassword {
     hash: string;
 }
 
-// const pbkdf2 =
-
 const config = {
     iterations: 100_000,
     keylen: 64,

@@ -6,9 +6,8 @@ import tseslint from "typescript-eslint";
 
 
 export default defineConfig([
-  { ignores: ["src/graphql/types.ts","src/graphql/graphql.d.ts" ,"generated/*"] },
+  { ignores: ["src/graphql/types.ts","src/graphql/graphql.d.ts" ,"generated/*", "src/types/*"] },
   {
-
     files: ["**/*.{js,mjs,cjs,ts,mts,cts}"],
     plugins: {
       js,

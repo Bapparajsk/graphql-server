@@ -12,7 +12,6 @@ createWorker(queue_names.EMAIL, async (job) => {
 
     const htmlContent = htmlTemplate.replace("{{otp}}", otp);
 
-    // const transporter = await getTestAccount();
     const data = await transporter.sendMail({
         from: process.env.TRANSPORTER_USER || "your email",
         to: email,

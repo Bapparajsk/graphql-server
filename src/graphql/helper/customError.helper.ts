@@ -2,75 +2,22 @@ import { GraphQLError } from "graphql/error";
 import { JsonWebTokenError } from "jsonwebtoken";
 import { ZodError } from "zod/v4";
 
-import {formatError} from "../tools/zod";
+import { formatError } from "../tools/zod";
 
+import {
+    ErrorCode,
+    ErrorCodes,
+    ErrorTypes
+} from "@/types/graphql/helper/customError.helper";
 
-export type errorCode = "GRAPHQL_PARSE_FAILED" | "GRAPHQL_VALIDATION_FAILED" | "BAD_USER_INPUT" | "USER_NOT_FOUND" |
-    "PERSISTED_QUERY_NOT_FOUND" | "OPERATION_RESOLUTION_FAILURE" | "BAD_REQUEST" | "INTERNAL_SERVER_ERROR" | "UNAUTHORIZED" |
-    "OTP_RESET_LIMIT";
-
-export interface ErrorTypes {
-    code: errorCode | string;
-    message: string;
-    status: number
-}
-
-const errorCodes: Record<errorCode, ErrorTypes> = {
-    GRAPHQL_PARSE_FAILED: {
-        code: "GRAPHQL_PARSE_FAILED",
-        message: "GraphQL query parsing failed",
-        status: 400,
-    },
-    GRAPHQL_VALIDATION_FAILED: {
-        code: "GRAPHQL_VALIDATION_FAILED",
-        message: "GraphQL query validation failed",
-        status: 400,
-    },
-    BAD_USER_INPUT: {
-        code: "BAD_USER_INPUT",
-        message: "Invalid services input",
-        status: 400,
-    },
-    PERSISTED_QUERY_NOT_FOUND: {
-        code: "PERSISTED_QUERY_NOT_FOUND",
-        message: "Persisted query not found",
-        status: 404,
-    },
-    OPERATION_RESOLUTION_FAILURE: {
-        code: "OPERATION_RESOLUTION_FAILURE",
-        message: "Operation resolution failed",
-        status: 500,
-    },
-    BAD_REQUEST: {
-        code: "BAD_REQUEST",
-        message: "Bad request",
-        status: 400,
-    },
-    INTERNAL_SERVER_ERROR: {
-        code: "INTERNAL_SERVER_ERROR",
-        message: "Internal server error",
-        status: 500,
-    },
-    UNAUTHORIZED: {
-        code: "UNAUTHORIZED",
-        message: "Unauthorized access",
-        status: 401,
-    },
-    USER_NOT_FOUND: {
-        code: "USER_NOT_FOUND",
-        message: "User not found",
-        status: 404,
-    },
-    OTP_RESET_LIMIT: {
-        code: "OTP_RESET_LIMIT",
-        message: "You have exceeded the maximum number of OTP reset attempts. Please contact support.",
-        status: 429,
-    }
-};
-
-
-const customError = (code : errorCode | ErrorTypes, message?: string) => {
-    if(code && typeof code === "object") {
+/**
+ * Returns a formatted GraphQLError instance based on a predefined error code or full error object.
+ * @param code - Can be either an ErrorCode string or a full ErrorTypes object
+ * @param message - Optional custom error message to override default
+ */
+const customError = (code: ErrorCode | ErrorTypes, message?: string) => {
+    // If full ErrorTypes object is passed
+    if (code && typeof code === "object") {
         return new GraphQLError(message || code.message, {
             extensions: {
                 code: code.code,
@@ -81,13 +28,14 @@ const customError = (code : errorCode | ErrorTypes, message?: string) => {
         });
     }
 
-    const errorType = errorCodes[code as errorCode] || {
+    // If only ErrorCode is passed, get matching error object or fallback to internal error
+    const errorType = ErrorCodes[code as ErrorCode] || {
         code: "INTERNAL_SERVER_ERROR",
-        message:  "An unknown error occurred",
+        message: "An unknown error occurred",
         status: 500,
     };
 
-    return new GraphQLError( message || errorType.message, {
+    return new GraphQLError(message || errorType.message, {
         extensions: {
             code: errorType.code,
             http: {
@@ -97,14 +45,19 @@ const customError = (code : errorCode | ErrorTypes, message?: string) => {
     });
 };
 
-
+/**
+ * Centralized error handler to throw GraphQL-compliant errors
+ * @param e - The caught error (can be anything)
+ * @param eList - Optional list of custom ErrorTypes to match string-based errors
+ */
 const customErrors = (e: unknown, eList: ErrorTypes[] = []) => {
 
+    // If already a GraphQL error, re-throw it
     if (e instanceof GraphQLError) {
         throw e;
     }
 
-    // Match errors with custom error list
+    // If it's a known Error object and matches a code from provided custom list
     if (e instanceof Error) {
         const matchedError = eList.find(err => err.code === e.message);
         if (matchedError) {
@@ -112,14 +65,17 @@ const customErrors = (e: unknown, eList: ErrorTypes[] = []) => {
         }
     }
 
+    // Handle JWT token-related errors
     if (e instanceof JsonWebTokenError) {
         throw customError("UNAUTHORIZED");
     }
 
+    // Handle Zod validation errors with formatted message
     if (e instanceof ZodError) {
         throw customError("BAD_USER_INPUT", formatError(e));
     }
 
+    // Fallback for unknown/unhandled errors
     throw customError("INTERNAL_SERVER_ERROR");
 };
 

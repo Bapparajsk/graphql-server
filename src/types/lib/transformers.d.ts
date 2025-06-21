@@ -19,20 +19,26 @@ export type Author = {
 }
 
 /**
+* A type that represents the fields in Post and Comment that are transformed
+* to string format. This is used to ensure consistency across different types.
+*/
+type TransformedField = "createdAt" | "updatedAt";
+
+/**
  * A Post type where the `createdAt` and `updatedAt` fields are converted to strings,
  * and the optional `author` field is included using the TransformedUser format.
  */
 export type TransformedPost =
-    Omit<Post, "createdAt" | "updatedAt"> & Transformed & Author;
+    Omit<Post, TransformedField> & Transformed & Author;
 
 /**
  * A Comment type with transformed timestamps and optional `author` details.
  */
 export type TransformedComment =
-    Omit<Comment, "createdAt" | "updatedAt"> & Transformed & Author;
+    Omit<Comment, TransformedField> & Transformed & Author;
 
 /**
  * A User type with stringified timestamps.
  */
 export type TransformedUser =
-    Omit<User, "createdAt" | "updatedAt"> & Transformed;
+    Omit<User, TransformedField> & Transformed;

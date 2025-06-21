@@ -90,10 +90,11 @@ export const sendOtp: MutationResolvers["sendOtp"] = async (_, { input }, { serv
 
         // ✅ Validate the email format and normalize it
         const validEmail = tools.zodValidator.isEmail(identifier);
+        const validPurpose = tools.zodValidator.isValidPurpose(purpose);
 
-        let userResult: UserResult | null = null;
+        let userResult: UserResult | null;
         // 🔐 Ensure the user is authenticated if the OTP is not for login (e.g., for account changes)
-        if (purpose !== "LOGIN") {
+        if (validPurpose !== "LOGIN") {
             userResult = await tools.isAuthenticated();
 
             if (userResult.value.email !== validEmail) {
@@ -113,7 +114,7 @@ export const sendOtp: MutationResolvers["sendOtp"] = async (_, { input }, { serv
         const user = userResult.value;
 
         // ⏱️ Throttle OTP resends to prevent spamming (1-minute cooldown)
-        await services.auth.isValidThrottle({ identifier: validEmail, purpose });
+        await services.auth.isValidThrottle({ identifier: validEmail, purpose: validPurpose });
 
         // 🚫 Block request if user has exceeded the allowed OTP reset attempts
         services.user.isValidOtpResetCount(user.otpResetCount);
@@ -124,7 +125,7 @@ export const sendOtp: MutationResolvers["sendOtp"] = async (_, { input }, { serv
         // 📦 Perform OTP-related operations concurrently:
         await Promise.all([
             // 1️⃣ Save OTP and expiration info in Redis
-            services.auth.saveOtp({ identifier: validEmail, purpose, otpDetails }),
+            services.auth.saveOtp({ identifier: validEmail, purpose: validPurpose, otpDetails }),
 
             // 2️⃣ Send OTP to user via preferred channel (e.g., email)
             services.auth.sendOtp({ identifier: validEmail, otp: otpDetails.otp }),
@@ -146,7 +147,7 @@ export const verifyOtp: MutationResolvers["verifyOtp"] = async (_, { input }, { 
         // 📨 Extract input values: OTP, identifier (email), and purpose
         const {otp, identifier, purpose} = tools.zodValidator.isValidOtp(input);
 
-        let userResult: UserResult | null = null;
+        let userResult: UserResult | null;
         // 🔐 Ensure the user is authenticated if the OTP is not for login (e.g., for account changes)
         if (purpose !== "LOGIN") {
             userResult = await tools.isAuthenticated();

@@ -22,10 +22,7 @@ export interface Identifier {
 }
 
 // Enum representing different use cases for sending an OTP
-export enum PurposeEnum {
-    REGISTER, // OTP is used during account registration
-    LOGIN     // OTP is used during login
-}
+export type PurposeEnum = "REGISTER" | "LOGIN";
 
 // Interface combining an identifier with the purpose of OTP
 export interface Purpose {

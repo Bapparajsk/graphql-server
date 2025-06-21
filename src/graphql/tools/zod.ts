@@ -76,6 +76,10 @@ class ZodValidator {
             purpose: z.enum(["LOGIN" , "REGISTER"]),
         }).parse(input);
     }
+
+    isValidPurpose(purpose: string) {
+        return z.enum(["LOGIN", "REGISTER"]).parse(purpose);
+    }
 }
 
 export {

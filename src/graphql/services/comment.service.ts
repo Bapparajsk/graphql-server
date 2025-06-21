@@ -1,9 +1,9 @@
-import * as type from "../types";
+import {customError} from "@graphql/helper";
 
 import {CommentResult, CommentResultArray} from "./result";
 
 import prisma from "@/lib/prisma";
-import {customError} from "@graphql/helper";
+import {AddCommentType, GetCommentsType, UpdateCommentType} from "@/types/graphql/comment.service";
 
 /**
  * Service class to handle comment-related database operations
@@ -32,10 +32,7 @@ class CommentService {
     /**
      * Fetch paginated comments for a given post
      */
-    getComments = async ({
-                             postId,
-                             input,
-                         }: type.PostQueryCommentsArgs & { postId: number }): Promise<CommentResultArray> => {
+    getComments = async ({ postId, input, }: GetCommentsType): Promise<CommentResultArray> => {
         const skip = (input.page - 1) * input.limit;
 
         const comments = await prisma.comment.findMany({
@@ -52,20 +49,12 @@ class CommentService {
     /**
      * Create a new comment on a post by a user
      */
-    addComment = async ({
-                            postId,
-                            user,
-                            comment,
-                        }: {
-        postId: number;
-        user: type.User;
-        comment: string;
-    }): Promise<CommentResult> => {
+    addComment = async ({ postId, userId, comment, }: AddCommentType): Promise<CommentResult> => {
         const newComment = await prisma.comment.create({
             data: {
                 comment,
                 postId,
-                authorId: user.id,
+                authorId: userId,
             },
         });
 
@@ -75,15 +64,7 @@ class CommentService {
     /**
      * Update an existing comment's content
      */
-    updateComment = async ({
-                               commentId,
-                               comment,
-                                isAuthor = false,
-                           }: {
-        commentId: number;
-        comment: string;
-        isAuthor?: boolean; // Optional, defaults to false
-    }): Promise<CommentResult> => {
+    updateComment = async ({ commentId, comment, isAuthor = false, }: UpdateCommentType): Promise<CommentResult> => {
         const updatedComment = await prisma.comment.update({
             where: { id: commentId },
             include: { author: isAuthor },

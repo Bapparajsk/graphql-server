@@ -1,16 +1,22 @@
-import {customError} from "@graphql/helper";
-import {PostResult, PostResultArray} from "@graphql/services/result";
-
-import * as type from "../types";
+import { customError } from "@graphql/helper";
+import { PostResult, PostResultArray } from "@graphql/services/result";
 
 import prisma from "@/lib/prisma";
+import {
+    CreatePostInput,
+    getPostById,
+    GetPostInput,
+    UpdatePostInput
+} from "@/types/graphql/post.service";
 
 class PostService {
-
-    createPost = async ({ input, authorId }: type.MutationCreatePostArgs & { authorId : number } ): Promise<PostResult> => {
+    /**
+     * 📝 Create a new post with title, content, and author ID.
+     */
+    createPost = async ({ input, authorId }: CreatePostInput): Promise<PostResult> => {
         const { title, content } = input;
 
-        const post = await  prisma.post.create({
+        const post = await prisma.post.create({
             data: {
                 title,
                 content,
@@ -21,20 +27,29 @@ class PostService {
         return new PostResult(post);
     };
 
-    getPosts = async ({ input, userId }: type.QueryPostListArgs & { id?: number }): Promise<PostResultArray> => {
+    /**
+     * 📚 Fetch paginated list of posts.
+     * Optionally filter by user ID (authorId).
+     */
+    getPosts = async ({ input, userId }: GetPostInput): Promise<PostResultArray> => {
         const skip = (input.page - 1) * input.limit;
+
         const posts = await prisma.post.findMany({
             where: userId ? { authorId: userId } : undefined,
             skip,
             take: input.limit,
             orderBy: { createdAt: "desc" },
-            include: { author: true, },
+            include: { author: true },
         });
 
         return new PostResultArray(posts);
     };
 
-    getPostById = async ({ postId, author = false } : { postId: number; author?: boolean}): Promise<PostResult> => {
+    /**
+     * 🔍 Fetch a post by its ID.
+     * Optionally include author information.
+     */
+    getPostById = async ({ postId, author = false }: getPostById): Promise<PostResult> => {
         const post = await prisma.post.findUnique({
             where: { id: postId },
             include: { author },
@@ -51,10 +66,13 @@ class PostService {
         return new PostResult(post);
     };
 
+    /**
+     * 🔒 Check if the current user is the author of the post.
+     * Throws an error if unauthorized or post doesn't exist.
+     */
     isMyPost = async (userId: number, postId: number): Promise<PostResult> => {
         const post = await prisma.post.findUnique({
             where: { id: postId },
-            // include: { author: true}
         });
 
         if (!post) {
@@ -76,16 +94,28 @@ class PostService {
         return new PostResult(post);
     };
 
-    updatePost = async ({ input, postId } : type.PostMutationUpdatePostArgs & { postId: number } ): Promise<PostResult> => {
-        const post = await prisma.post.update({where: {id: postId}, data: input,});
+    /**
+     * ✏️ Update a post by ID using the provided input.
+     */
+    updatePost = async ({ input, postId }: UpdatePostInput): Promise<PostResult> => {
+        const post = await prisma.post.update({
+            where: { id: postId },
+            data: input,
+        });
+
         return new PostResult(post);
     };
 
+    /**
+     * ❌ Delete a post by ID.
+     */
     deletePost = async (postId: number): Promise<PostResult> => {
-        const post = await prisma.post.delete({where: {id: postId},});
+        const post = await prisma.post.delete({
+            where: { id: postId },
+        });
+
         return new PostResult(post);
     };
-
 }
 
 export default PostService;

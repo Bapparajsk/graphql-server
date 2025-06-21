@@ -8,7 +8,7 @@ import {
     ErrorCode,
     ErrorCodes,
     ErrorTypes
-} from "@/types/graphql/helper/customError.helper";
+} from "@/types/graphql/customError.helper";
 
 /**
  * Returns a formatted GraphQLError instance based on a predefined error code or full error object.

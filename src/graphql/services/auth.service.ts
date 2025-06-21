@@ -1,41 +1,43 @@
 import crypto, { randomInt } from "node:crypto";
 import { promisify } from "util";
 
-import {customError} from "@graphql/helper";
-import {UserResult} from "@graphql/services/result";
+import { customError, customErrors } from "@graphql/helper";
+import { UserResult } from "@graphql/services/result";
 
 import { PrismaClientKnownRequestError } from "../../../generated/prisma/runtime/library";
 import prisma, { User } from "../../lib/prisma";
-import {MutationCreateUserArgs, MutationSignInArgs} from "../types";
+import { MutationCreateUserArgs, MutationSignInArgs } from "../types";
 
 import redis from "@/config/redis.config";
-import {sendOTPInEmail} from "@/lib/bullmq/producer";
+import { sendOTPInEmail } from "@/lib/bullmq/producer";
+import {
+    HashPassword,
+    IsValidThrottleType,
+    OtpDetails,
+    SaveOtpType,
+    SendOtpType,
+    VerifyOtpType,
+    VerifyPasswordType
+} from "@/types/graphql/auth.service";
 
-interface HashPassword {
-    salt: string;
-    hash: string;
-}
-
+// Configuration for password hashing using PBKDF2
 const config = {
     iterations: 100_000,
     keylen: 64,
     digest: "sha512"
 };
 
-interface OtpDetails {
-    otp: string;
-    otpExpires: Date;
-    resendTimeLimit: number; // Optional field to track resend attempts
-}
-
 class AuthService {
-
     private readonly pbkdf2;
 
     constructor() {
+        // Promisify pbkdf2 to use async/await
         this.pbkdf2 = promisify(crypto.pbkdf2);
     }
 
+    /**
+     * 🔒 Hashes a plain text password using PBKDF2 with a random salt.
+     */
     async #hashPassword(password: string): Promise<HashPassword> {
         const salt = crypto.randomBytes(16).toString("hex");
         const derivedKey = await this.pbkdf2(password, salt, config.iterations, config.keylen, config.digest);
@@ -45,11 +47,17 @@ class AuthService {
         };
     }
 
-    async #verifyPassword(password: string, salt: string, hash: string): Promise<boolean> {
+    /**
+     * 🔐 Verifies that a given password matches the stored hash using the stored salt.
+     */
+    async #verifyPassword({ password, salt, hash }: VerifyPasswordType): Promise<boolean> {
         const derivedKey = await this.pbkdf2(password, salt, config.iterations, config.keylen, config.digest);
         return derivedKey.toString("hex") === hash;
     }
 
+    /**
+     * 👤 Creates a new user in the database with a hashed password and salt.
+     */
     async createUser({ input }: MutationCreateUserArgs): Promise<UserResult> {
         try {
             const { salt, hash } = await this.#hashPassword(input.password);
@@ -57,18 +65,16 @@ class AuthService {
                 data: {
                     email: input.email,
                     name: input.name,
-                    password: hash, // Store the hashed password
-                    salt // Store the salt for future password verification
+                    password: hash,
+                    salt
                 }
             });
 
             return new UserResult(newUser);
         } catch (e) {
-            console.log(e);
+            // Handle unique constraint error (e.g., email already exists)
             if (e instanceof PrismaClientKnownRequestError) {
-                // console.log(e);
                 if (e.code === "P2002") {
-                    // Unique constraint failed
                     throw customError({
                         code: "USER_ALREADY_EXISTS",
                         message: "User with this email already exists",
@@ -77,14 +83,17 @@ class AuthService {
                 }
             }
 
-            throw customError("INTERNAL_SERVER_ERROR", e instanceof Error ? e.message : "An error occurred while creating the user");
+            // Throw unhandled Prisma or other errors
+            throw customErrors(e);
         }
     }
 
+    /**
+     * 🔑 Authenticates a user by verifying their email and password.
+     */
     async singInUser({ input }: MutationSignInArgs): Promise<User> {
-
         const data = await prisma.user.findUnique({
-            where: {  email: input.email },
+            where: { email: input.email },
         });
 
         if (!data) {
@@ -95,8 +104,13 @@ class AuthService {
             });
         }
 
-        // Verify the password
-        const isPasswordValid = await this.#verifyPassword(input.password, data.salt, data.password);
+        // Compare provided password with stored hash
+        const isPasswordValid = await this.#verifyPassword({
+            password: input.password,
+            salt: data.salt,
+            hash: data.password
+        });
+
         if (!isPasswordValid) {
             throw customError({
                 code: "INVALID_CREDENTIALS",
@@ -104,41 +118,50 @@ class AuthService {
                 status: 400
             });
         }
-        // If the password is valid, return the services data
+
         return data;
     }
 
+    /**
+     * 🔢 Generates a 6-digit OTP along with expiration and resend limit timestamps.
+     */
     generateOtp(): OtpDetails {
-        const otp = randomInt(100000, 999999); // Generate a 6-digit OTP
-        const otpExpires = new Date(Date.now() + 5 * 60 * 1000); // OTP expires in 5 minutes
-        const resendTimeLimit = Date.now() + 60 * 1000; // Resend limit set to 1 minute
+        const otp = randomInt(100000, 999999); // Random 6-digit OTP
+        const otpExpires = new Date(Date.now() + 5 * 60 * 1000); // OTP valid for 5 minutes
+        const resendTimeLimit = Date.now() + 60 * 1000; // Allow resend after 1 minute
 
         return {
             otp: otp.toString(),
             otpExpires,
             resendTimeLimit
         };
-    };
-
-
-    async saveOtp({ identifier, otpDetails, purpose } : { identifier: string; otpDetails: OtpDetails; purpose: string }) {
-        await redis.set(`${purpose}:${identifier}`, JSON.stringify(otpDetails), "EX", 300); // Expires in 5 min
     }
 
-    async getOtpDetails({ identifier, purpose }: { identifier: string; purpose: string }) {
-        const otpDetails = await redis.get(`${purpose}:${identifier}`);
-        return JSON.parse(otpDetails) as OtpDetails;
+    /**
+     * 💾 Saves OTP details in Redis with an expiration time (5 minutes).
+     */
+    async saveOtp({ identifier, otpDetails, purpose }: SaveOtpType) {
+        await redis.set(`${purpose}:${identifier}`, JSON.stringify(otpDetails), "EX", 300);
     }
 
-    async isValidThrottle ({ identifier, purpose }: { identifier: string; purpose: string }) {
-        const otpDetails = await this.getOtpDetails({ identifier, purpose });
+    /**
+     * 📦 Fetches OTP details from Redis using purpose and identifier as the key.
+     */
+    async getOtpDetails({ identifier, purpose }: IsValidThrottleType): Promise<string | null> {
+        return await redis.get(`${purpose}:${identifier}`);
+    }
 
-        if(!otpDetails) {
-            return true; // No OTP details found, proceed with sending OTP
-        }
+    /**
+     * ⏳ Validates if the user can request another OTP based on resend time limit.
+     * Throws a throttling error if resend is too soon.
+     */
+    async isValidThrottle({ identifier, purpose }: IsValidThrottleType) {
+        const cashOtp = await this.getOtpDetails({ identifier, purpose });
 
+        if (!cashOtp) return true;
+
+        const { resendTimeLimit } = JSON.parse(cashOtp) as OtpDetails;
         const currentDate = new Date();
-        const { resendTimeLimit } = otpDetails;
 
         if (resendTimeLimit && resendTimeLimit > currentDate.getTime()) {
             throw customError({
@@ -151,14 +174,20 @@ class AuthService {
         return true;
     }
 
+    /**
+     * 🔁 Checks whether the OTP reset count is within the allowed daily limit.
+     */
     isValidOtpResetCount(otpResetCount: number): boolean {
         return otpResetCount <= 5;
     }
 
-    async verifyOtp({ identifier, otp, purpose }: { identifier: string; otp: string; purpose: string }) {
-        const otpDetails = await this.getOtpDetails({ identifier, purpose });
+    /**
+     * ✅ Verifies if the provided OTP is valid and not expired.
+     */
+    async verifyOtp({ otp, identifier, purpose }: VerifyOtpType) {
+        const cashOtp = await this.getOtpDetails({ identifier, purpose });
 
-        if(!otpDetails) {
+        if (!cashOtp) {
             throw customError({
                 code: "OTP_NOT_FOUND",
                 message: "OTP not found or has expired",
@@ -166,8 +195,10 @@ class AuthService {
             });
         }
 
+        const otpDetails: OtpDetails = JSON.parse(cashOtp);
         const currentDate = new Date();
 
+        // Check for expiration
         if (currentDate > new Date(otpDetails.otpExpires)) {
             throw customError({
                 code: "OTP_EXPIRED",
@@ -176,7 +207,8 @@ class AuthService {
             });
         }
 
-        if(otpDetails.otp !== otp) {
+        // Check OTP match
+        if (otpDetails.otp !== otp) {
             throw customError({
                 code: "INVALID_OTP",
                 message: "Invalid OTP",
@@ -187,7 +219,10 @@ class AuthService {
         return true;
     }
 
-    async sendOtp({ identifier, otp }: { identifier: string; otp: string }) {
+    /**
+     * 📧 Sends OTP to the user via email using BullMQ queue.
+     */
+    async sendOtp({ identifier, otp }: SendOtpType) {
         try {
             console.log("Sending OTP to:", identifier, "OTP:", otp);
             await sendOTPInEmail({ email: identifier, otp });

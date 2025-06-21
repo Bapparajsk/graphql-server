@@ -1,7 +1,7 @@
 import { createTransport } from "nodemailer";
 
 const transporter = createTransport({
-    host: "smtp.gmail.com",
+    host: process.env.TRANSPORTER_HOST || "smtp.gmail.com",
     port: 587,
     secure: false,
     auth: {

@@ -2,11 +2,9 @@ import jwt, { SignOptions, VerifyOptions } from "jsonwebtoken";
 
 import {customError} from "../helper";
 
-export type Payload = {
-    id: number;
-    email?: string;
-    name?: string;
-};
+import { Payload } from "@/types/graphql/jwt";
+
+
 
 class Jwt {
     readonly #secret: string;

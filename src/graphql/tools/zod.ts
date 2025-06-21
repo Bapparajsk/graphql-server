@@ -1,4 +1,5 @@
 import {z, ZodError} from "zod/v4";
+import {InputData} from "@/types/graphql/zod";
 
 const authSchema = z.object({
     id: z.number().int("ID must be an integer"),
@@ -25,21 +26,6 @@ export const postSchema = z.object({
 
 const formatError = (error: ZodError<unknown>) =>
     error.issues.map((issue) => issue.message).join(", ");
-
-// Input type
-interface InputData {
-    id?: number;
-    email?: string;
-    password?: string;
-    name?: string;
-    page?: number;
-    limit?: number;
-    title?: string;
-    content?: string;
-    otp?: string;
-    identifier?: string;
-    purpose?: "LOGIN" | "REGISTER";
-}
 
 // Validator class
 class ZodValidator {

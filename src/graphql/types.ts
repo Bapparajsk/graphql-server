@@ -47,6 +47,7 @@ export type CreateUserInput = {
 export type CreateUserResponse = {
   __typename?: 'CreateUserResponse';
   message?: Maybe<Scalars['String']['output']>;
+  success: Scalars['Boolean']['output'];
   token: Scalars['String']['output'];
   user: User;
 };
@@ -102,7 +103,9 @@ export type MutationSignInArgs = {
 
 export type MutationTestMutationArgs = {
   email: Scalars['String']['input'];
+  name?: InputMaybe<Scalars['String']['input']>;
   otp: Scalars['String']['input'];
+  purpose: OtpPurpose;
 };
 
 
@@ -408,6 +411,7 @@ export type CommentResolvers<ContextType = Context, ParentType extends Resolvers
 
 export type CreateUserResponseResolvers<ContextType = Context, ParentType extends ResolversParentTypes['CreateUserResponse'] = ResolversParentTypes['CreateUserResponse']> = {
   message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   token?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -425,7 +429,7 @@ export type MutationResolvers<ContextType = Context, ParentType extends Resolver
   post?: Resolver<Maybe<ResolversTypes['PostMutation']>, ParentType, ContextType, RequireFields<MutationPostArgs, 'id'>>;
   sendOtp?: Resolver<ResolversTypes['SuccessResponse'], ParentType, ContextType, RequireFields<MutationSendOtpArgs, 'input'>>;
   signIn?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, Partial<MutationSignInArgs>>;
-  testMutation?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationTestMutationArgs, 'email' | 'otp'>>;
+  testMutation?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationTestMutationArgs, 'email' | 'otp' | 'purpose'>>;
   user?: Resolver<Maybe<ResolversTypes['UserMutation']>, ParentType, ContextType, RequireFields<MutationUserArgs, 'id'>>;
   verifyOtp?: Resolver<ResolversTypes['SuccessResponse'], ParentType, ContextType, RequireFields<MutationVerifyOtpArgs, 'input'>>;
 };

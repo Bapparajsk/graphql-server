@@ -1,10 +1,8 @@
 import { EmailQueue } from "@/config/bullmq.config";
+import {SendOtpType} from "@/types/graphql/auth.service";
 
-export const sendOTPInEmail = async ({ email, otp } : { email: string, otp: string }) => {
-    await EmailQueue.add("send-email", {
-        email,
-        otp
-    }, {
+export const sendOTPInEmail = async (data : SendOtpType) => {
+    await EmailQueue.add("send-email", data, {
         attempts: 3, // Retry up to 3 times on failure
         backoff: {
             type: "exponential",

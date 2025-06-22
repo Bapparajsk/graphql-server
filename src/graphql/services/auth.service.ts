@@ -222,10 +222,9 @@ class AuthService {
     /**
      * 📧 Sends OTP to the user via email using BullMQ queue.
      */
-    async sendOtp({ identifier, otp }: SendOtpType) {
+    async sendOtp(sendOtpType: SendOtpType) {
         try {
-            console.log("Sending OTP to:", identifier, "OTP:", otp);
-            await sendOTPInEmail({ email: identifier, otp });
+            await sendOTPInEmail(sendOtpType);
         } catch (e) {
             console.log("Error sending OTP:", e);
             throw new Error("ERROR_SENDING_OTP");

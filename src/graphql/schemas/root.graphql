@@ -31,5 +31,5 @@ type Mutation {
     createPost(input: CreatePostInput): Post!
 
 #    test mutation
-    testMutation(email: String!, otp: String!): String!
+    testMutation(email: String!, otp: String!, purpose: OtpPurpose!, name: String): String!
 }

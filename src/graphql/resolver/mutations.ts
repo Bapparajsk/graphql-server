@@ -10,8 +10,8 @@ export const Mutation: Resolvers["Mutation"] = {
     // Posts
     createPost,
     post: postMutation,
-    testMutation: async (_, { email, otp }) => {
-        await sendOTPInEmail({ email, otp });
+    testMutation: async (_, { email, otp, name, purpose }) => {
+        await sendOTPInEmail({ identifier: email, otp, name, purpose });
         return "Test mutation successful!";
     }
 };

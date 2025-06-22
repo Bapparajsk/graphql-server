@@ -27,15 +27,20 @@ export const createUser: MutationResolvers["createUser"] = async (_, { input }, 
         // 🔑 Generate a new OTP for the user (6-digit code)
         const otpDetails = services.auth.generateOtp();
 
+        // ♻️ Reuse shared values
+        const purpose = "REGISTER";
+        const identifier = userResult.email;
+        const name = user.name;
+
         // 📦 Perform multiple operations concurrently:
         await Promise.all([
-            services.auth.isValidThrottle({ identifier: userResult.email, purpose: "REGISTER" }),
+            services.auth.isValidThrottle({ identifier, purpose }),
 
             // 1️⃣ Save the OTP and its metadata in Redis
-            services.auth.saveOtp({ identifier: userResult.email, purpose: "REGISTER", otpDetails }),
+            services.auth.saveOtp({ identifier, purpose, otpDetails }),
 
             // 2️⃣ Send the OTP to the user's email
-            services.auth.sendOtp({ identifier: userResult.email, otp: otpDetails.otp }),
+            services.auth.sendOtp({ identifier, otp: otpDetails.otp, name, purpose }),
 
             // 3️⃣ Update the user's OTP reset attempt count (initially set to 1)
             services.user.updateUser(user.id, {otpResetCount: 1 })
@@ -63,24 +68,28 @@ export const signIn: MutationResolvers["signIn"] = async (_, { input }, { servic
 
         // 🔑 Generate a new OTP for the user (6-digit code)
         const otpDetails = services.auth.generateOtp();
-        const otpPurpose = "LOGIN";
+
+        // ♻️ Reuse shared values
+        const purpose = "LOGIN";
+        const identifier = user.email;
+        const name = user.name;
 
         // 📦 Perform multiple operations concurrently:
         await Promise.all([
-            services.auth.isValidThrottle({ identifier: user.email, purpose: otpPurpose }),
+            services.auth.isValidThrottle({ identifier, purpose }),
 
             // 1️⃣ Save the OTP and its metadata in Redis
-            services.auth.saveOtp({ identifier: user.email, purpose: otpPurpose, otpDetails }),
+            services.auth.saveOtp({ identifier, purpose, otpDetails }),
 
             // 2️⃣ Send the OTP to the user's email
-            services.auth.sendOtp({ identifier: user.email, otp: otpDetails.otp }),
+            services.auth.sendOtp({ identifier, otp: otpDetails.otp, name, purpose }),
 
             // 3️⃣ Update the user's OTP reset attempt count (initially set to 1)
             services.user.updateUser(user.id, { otpResetCount: user.otpResetCount + 1 })
         ]);
 
         // 🎉 Return the token and user info to the client
-        return { message: "Sign-in successful. Please verify your email with the OTP sent." };
+        return { success: true, message: "Sign-in successful. Please verify your email with the OTP sent.", };
     });
 };
 
@@ -128,7 +137,7 @@ export const sendOtp: MutationResolvers["sendOtp"] = async (_, { input }, { serv
             services.auth.saveOtp({ identifier: validEmail, purpose: validPurpose, otpDetails }),
 
             // 2️⃣ Send OTP to user via preferred channel (e.g., email)
-            services.auth.sendOtp({ identifier: validEmail, otp: otpDetails.otp }),
+            services.auth.sendOtp({ identifier: validEmail, otp: otpDetails.otp, name: user.name }),
 
             // 3️⃣ Update the user's OTP reset attempt count
             services.user.updateUser(user.id, { otpResetCount: user.otpResetCount + 1 }),

@@ -32,6 +32,8 @@ export interface Purpose {
 // Structure for sending an OTP to a user
 export interface SendOtpType extends Identifier {
     otp: string; // The OTP to send to the user
+    name?: string; // Optional name of the user, useful for personalized messages
+    purpose?: PurposeEnum; // Purpose of the OTP, e.g., REGISTER or LOGIN
 }
 
 // Structure for verifying an OTP; combines identifier, OTP, and purpose

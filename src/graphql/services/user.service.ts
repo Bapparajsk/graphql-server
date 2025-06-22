@@ -53,7 +53,7 @@ class UserController {
         const skip = (page - 1) * limit;
 
         const users = await prisma.user.findMany({
-            where: { id: { not: id } }, // exclude current user
+            // where: { id: { not: id } }, // exclude current user
             skip,
             take: limit,
             orderBy: { id: "asc" },

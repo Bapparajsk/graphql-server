@@ -6,6 +6,7 @@ type CreateUserResponse {
     user: User!
     token: String!
     message: String
+    success: Boolean!
 }
 
 input SignInInput {

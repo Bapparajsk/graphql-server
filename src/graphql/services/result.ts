@@ -1,12 +1,6 @@
-import { Post, User, Comment } from "@/lib/prisma";
-import {
-    transformPost,
-    transformUser,
-    transformComment,
-    TransformedPost,
-    TransformedComment,
-    TransformedUser,
-} from "@/lib/transformers";
+import {Post, User, Comment} from "@/lib/prisma";
+import {transformPost, transformUser, transformComment} from "@/lib/transformers";
+import {TransformedComment, TransformedPost, TransformedUser} from "@/types/lib/transformers";
 
 // Add optional author field to Post or Comment
 type Author = { author?: User };

@@ -1,4 +1,5 @@
 import {z, ZodError} from "zod/v4";
+
 import {InputData} from "@/types/graphql/zod";
 
 const authSchema = z.object({

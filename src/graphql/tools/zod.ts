@@ -25,13 +25,13 @@ export const postSchema = z.object({
     content: z.url("Content must be a valid URL"),
 });
 
+export const purposeEnum = z.enum(["LOGIN", "EMAIL_VERIFICATION"]);
+
 const formatError = (error: ZodError<unknown>) =>
     error.issues.map((issue) => issue.message).join(", ");
 
 // Validator class
 class ZodValidator {
-
-    formatError = formatError;
 
     isRegister(input: InputData) {
         return authSchema.pick({ name: true, email: true, password: true }).parse(input);
@@ -74,12 +74,12 @@ class ZodValidator {
         return z.object({
             otp: z.string().length(6, "OTP must be exactly 6 digits"),
             identifier: z.email("Invalid email format"),
-            purpose: z.enum(["LOGIN" , "REGISTER"]),
+            purpose: purposeEnum
         }).parse(input);
     }
 
     isValidPurpose(purpose: string) {
-        return z.enum(["LOGIN", "REGISTER"]).parse(purpose);
+        return purposeEnum.parse(purpose);
     }
 }
 

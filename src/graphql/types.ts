@@ -119,8 +119,8 @@ export type MutationVerifyOtpArgs = {
 };
 
 export enum OtpPurpose {
-  Login = 'LOGIN',
-  Register = 'REGISTER'
+  EmailVerification = 'EMAIL_VERIFICATION',
+  Login = 'LOGIN'
 }
 
 export type Post = {

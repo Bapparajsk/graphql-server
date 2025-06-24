@@ -9,5 +9,5 @@ export interface InputData {
     content?: string;
     otp?: string;
     identifier?: string;
-    purpose?: "LOGIN" | "REGISTER";
+    purpose?: "LOGIN" | "EMAIL_VERIFICATION";
 }

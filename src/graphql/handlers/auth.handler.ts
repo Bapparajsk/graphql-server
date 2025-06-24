@@ -28,7 +28,7 @@ export const createUser: MutationResolvers["createUser"] = async (_, { input }, 
         const otpDetails = services.auth.generateOtp();
 
         // ♻️ Reuse shared values
-        const purpose = "REGISTER";
+        const purpose = "EMAIL_VERIFICATION";
         const identifier = userResult.email;
         const name = user.name;
 

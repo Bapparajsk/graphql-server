@@ -26,7 +26,7 @@ input SendOtpInput {
 }
 
 enum OtpPurpose {
-    REGISTER
+    EMAIL_VERIFICATION
     LOGIN
 }
 

@@ -47,7 +47,7 @@ export const createUser: MutationResolvers["createUser"] = async (_, { input }, 
         ]);
 
         // 🎉 Return the token and user info to the client
-        return { token, user, message: "User created successfully. Please verify your email with the OTP sent." };
+        return { token, user, message: "User created successfully. Please verify your email with the OTP sent.", success: true };
     });
 };
 
@@ -180,8 +180,10 @@ export const verifyOtp: MutationResolvers["verifyOtp"] = async (_, { input }, { 
         // ✅ Verify the OTP with the provided identifier and purpose
         await services.auth.verifyOtp({ identifier, otp, purpose });
 
-        // 🟢 Mark the user as verified in the database
-        await services.user.setUserVerified(user.id);
+        if(purpose === "EMAIL_VERIFICATION" && !user.isVerified) {
+            // 🟢 Mark the user as verified in the database
+            await services.user.setUserVerified(user.id);
+        }
 
         let token: string | undefined = undefined;
 

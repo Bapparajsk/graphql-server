@@ -67,6 +67,7 @@ export type Mutation = {
   __typename?: 'Mutation';
   createPost: Post;
   createUser: CreateUserResponse;
+  me?: Maybe<UserMutation>;
   post?: Maybe<PostMutation>;
   sendOtp: SuccessResponse;
   signIn: AuthResponse;
@@ -184,6 +185,7 @@ export type PostQueryCommentsArgs = {
 
 export type Query = {
   __typename?: 'Query';
+  me: User;
   post?: Maybe<PostQuery>;
   postList?: Maybe<PostListResponse>;
   user?: Maybe<UsersResponse>;
@@ -234,6 +236,7 @@ export type UpdateUserInput = {
 
 export type User = {
   __typename?: 'User';
+  bio: Scalars['String']['output'];
   createdAt: Scalars['String']['output'];
   email: Scalars['String']['output'];
   id: Scalars['Int']['output'];
@@ -426,6 +429,7 @@ export type GetCommentsResponseResolvers<ContextType = Context, ParentType exten
 export type MutationResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
   createPost?: Resolver<ResolversTypes['Post'], ParentType, ContextType, Partial<MutationCreatePostArgs>>;
   createUser?: Resolver<ResolversTypes['CreateUserResponse'], ParentType, ContextType, Partial<MutationCreateUserArgs>>;
+  me?: Resolver<Maybe<ResolversTypes['UserMutation']>, ParentType, ContextType>;
   post?: Resolver<Maybe<ResolversTypes['PostMutation']>, ParentType, ContextType, RequireFields<MutationPostArgs, 'id'>>;
   sendOtp?: Resolver<ResolversTypes['SuccessResponse'], ParentType, ContextType, RequireFields<MutationSendOtpArgs, 'input'>>;
   signIn?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, Partial<MutationSignInArgs>>;
@@ -468,6 +472,7 @@ export type PostQueryResolvers<ContextType = Context, ParentType extends Resolve
 };
 
 export type QueryResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
+  me?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   post?: Resolver<Maybe<ResolversTypes['PostQuery']>, ParentType, ContextType, RequireFields<QueryPostArgs, 'postId'>>;
   postList?: Resolver<Maybe<ResolversTypes['PostListResponse']>, ParentType, ContextType, Partial<QueryPostListArgs>>;
   user?: Resolver<Maybe<ResolversTypes['UsersResponse']>, ParentType, ContextType, Partial<QueryUserArgs>>;
@@ -482,6 +487,7 @@ export type SuccessResponseResolvers<ContextType = Context, ParentType extends R
 };
 
 export type UserResolvers<ContextType = Context, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
+  bio?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;

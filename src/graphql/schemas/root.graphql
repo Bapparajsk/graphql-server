@@ -11,6 +11,9 @@ type SuccessResponse {
 }
 
 type Query {
+#    user query
+    me: User!
+
     user(input: GetInputs): UsersResponse
     postList(userId: Int, input: GetInputs): PostListResponse
     post(postId: Int!): PostQuery
@@ -23,6 +26,9 @@ type Mutation {
 #    otp authentication
     sendOtp(input: SendOtpInput!): SuccessResponse!
     verifyOtp(input: VerifyOtpInput!): SuccessResponse!
+
+#    user mutations
+    me: UserMutation
 
     user(id: Int!): UserMutation
     post(id: Int!): PostMutation

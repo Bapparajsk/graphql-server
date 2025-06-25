@@ -2,8 +2,10 @@ node_modules
 # Keep environment variables out of version control
 .env
 
-/generated/prisma
-/prisma/dev.db
-
 # ide
 .idea
+
+#files
+/src/graphql/types.ts
+/generated/prisma
+/prisma/dev.db

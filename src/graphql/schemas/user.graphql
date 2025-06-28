@@ -6,10 +6,17 @@ type User {
     isActive: Boolean!
     isVerified: Boolean!
     createdAt: String!
+    profilePic: String!
+    backgroundPic: String!
 }
 
 input UpdateUserInput {
     name: String
+    bio: String
+    profilePic: String
+    backgroundPic: Boolean
+    oldPassword: String
+    newPassword: String
 }
 
 type UsersResponse {
@@ -17,7 +24,13 @@ type UsersResponse {
     hashNext: Boolean
 }
 
+type UserMutationResponse {
+    success: Boolean!
+    message: String
+}
+
 type UserMutation {
     id: Int!
-    update(input: UpdateUserInput): String
+    me: User!
+    update(input: UpdateUserInput): UserMutationResponse
 }

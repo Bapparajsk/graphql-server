@@ -231,11 +231,17 @@ export type UpdatePostInput = {
 };
 
 export type UpdateUserInput = {
+  backgroundPic?: InputMaybe<Scalars['Boolean']['input']>;
+  bio?: InputMaybe<Scalars['String']['input']>;
   name?: InputMaybe<Scalars['String']['input']>;
+  newPassword?: InputMaybe<Scalars['String']['input']>;
+  oldPassword?: InputMaybe<Scalars['String']['input']>;
+  profilePic?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type User = {
   __typename?: 'User';
+  backgroundPic: Scalars['String']['output'];
   bio: Scalars['String']['output'];
   createdAt: Scalars['String']['output'];
   email: Scalars['String']['output'];
@@ -243,17 +249,25 @@ export type User = {
   isActive: Scalars['Boolean']['output'];
   isVerified: Scalars['Boolean']['output'];
   name: Scalars['String']['output'];
+  profilePic: Scalars['String']['output'];
 };
 
 export type UserMutation = {
   __typename?: 'UserMutation';
   id: Scalars['Int']['output'];
-  update?: Maybe<Scalars['String']['output']>;
+  me: User;
+  update?: Maybe<UserMutationResponse>;
 };
 
 
 export type UserMutationUpdateArgs = {
   input?: InputMaybe<UpdateUserInput>;
+};
+
+export type UserMutationResponse = {
+  __typename?: 'UserMutationResponse';
+  message?: Maybe<Scalars['String']['output']>;
+  success: Scalars['Boolean']['output'];
 };
 
 export type UsersResponse = {
@@ -363,6 +377,7 @@ export type ResolversTypes = {
   UpdateUserInput: UpdateUserInput;
   User: ResolverTypeWrapper<User>;
   UserMutation: ResolverTypeWrapper<UserMutation>;
+  UserMutationResponse: ResolverTypeWrapper<UserMutationResponse>;
   UsersResponse: ResolverTypeWrapper<UsersResponse>;
   VerifyOtpInput: VerifyOtpInput;
 };
@@ -392,6 +407,7 @@ export type ResolversParentTypes = {
   UpdateUserInput: UpdateUserInput;
   User: User;
   UserMutation: UserMutation;
+  UserMutationResponse: UserMutationResponse;
   UsersResponse: UsersResponse;
   VerifyOtpInput: VerifyOtpInput;
 };
@@ -487,6 +503,7 @@ export type SuccessResponseResolvers<ContextType = Context, ParentType extends R
 };
 
 export type UserResolvers<ContextType = Context, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
+  backgroundPic?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   bio?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -494,12 +511,20 @@ export type UserResolvers<ContextType = Context, ParentType extends ResolversPar
   isActive?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   isVerified?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  profilePic?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type UserMutationResolvers<ContextType = Context, ParentType extends ResolversParentTypes['UserMutation'] = ResolversParentTypes['UserMutation']> = {
   id?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  update?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<UserMutationUpdateArgs>>;
+  me?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  update?: Resolver<Maybe<ResolversTypes['UserMutationResponse']>, ParentType, ContextType, Partial<UserMutationUpdateArgs>>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type UserMutationResponseResolvers<ContextType = Context, ParentType extends ResolversParentTypes['UserMutationResponse'] = ResolversParentTypes['UserMutationResponse']> = {
+  message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -523,6 +548,7 @@ export type Resolvers<ContextType = Context> = {
   SuccessResponse?: SuccessResponseResolvers<ContextType>;
   User?: UserResolvers<ContextType>;
   UserMutation?: UserMutationResolvers<ContextType>;
+  UserMutationResponse?: UserMutationResponseResolvers<ContextType>;
   UsersResponse?: UsersResponseResolvers<ContextType>;
 };
 

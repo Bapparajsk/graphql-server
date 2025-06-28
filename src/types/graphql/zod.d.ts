@@ -11,3 +11,12 @@ export interface InputData {
     identifier?: string;
     purpose?: "LOGIN" | "EMAIL_VERIFICATION";
 }
+
+export interface UserUpdateInput {
+    name?: String
+    bio?: String
+    profilePic?: String
+    backgroundPic?: Boolean
+    oldPassword?: String
+    newPassword?: String
+}

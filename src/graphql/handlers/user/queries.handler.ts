@@ -29,7 +29,7 @@ export const user: QueryResolvers["user"] = async (parent, { input }, { services
     });
 };
 
-export const me: QueryResolvers["me"] = async (_parent, _args, { tools }) => {
+export const meQuery: QueryResolvers["me"] = async (_parent, _args, { tools }) => {
     return tryCatch(async () => {
         // Ensure the user is authenticated and get the current user object
         const userResult = await tools.isAuthenticated();
@@ -37,4 +37,4 @@ export const me: QueryResolvers["me"] = async (_parent, _args, { tools }) => {
         // Transform the user data into a client-safe structure
         return userResult.transform();
     });
-}
+};

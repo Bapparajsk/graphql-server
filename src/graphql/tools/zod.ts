@@ -1,31 +1,8 @@
 import {z, ZodError} from "zod/v4";
 
-import {InputData} from "@/types/graphql/zod";
+import {authSchema, getInputsSchema, postSchema, purposeEnum, userUpdateSchema} from "./object.zod";
 
-const authSchema = z.object({
-    id: z.number().int("ID must be an integer"),
-    name: z.string().min(3, "Name is required"),
-    email: z.email("Invalid email format"),
-    password: z
-        .string()
-        .min(6, "Password must be at least 6 characters long")
-        .regex(
-            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{6,}$/,
-            "Password must contain at least one uppercase letter, one lowercase letter, and one number"
-        ),
-});
-
-const getInputsSchema = z.object({
-    page: z.number().min(1, "Page must be at least 1").default(1),
-    limit: z.number().min(1, "Limit must be at least 1").max(10, "Limit must be at most 10").default(10),
-});
-
-export const postSchema = z.object({
-    title: z.string().min(3, "Title is required"),
-    content: z.url("Content must be a valid URL"),
-});
-
-export const purposeEnum = z.enum(["LOGIN", "EMAIL_VERIFICATION"]);
+import {InputData, UserUpdateInput} from "@/types/graphql/zod";
 
 const formatError = (error: ZodError<unknown>) =>
     error.issues.map((issue) => issue.message).join(", ");
@@ -80,6 +57,15 @@ class ZodValidator {
 
     isValidPurpose(purpose: string) {
         return purposeEnum.parse(purpose);
+    }
+
+    isValidUserUpdate(input: UserUpdateInput) {
+        return userUpdateSchema.refine(
+            (data) =>
+                data.name !== undefined || data.bio !== undefined || data.profilePic !== undefined ||
+                data.backgroundPic !== undefined || data.oldPassword !== undefined || data.newPassword !== undefined ,
+            "At least one field must be provided for update.")
+            .parse(input);
     }
 }
 

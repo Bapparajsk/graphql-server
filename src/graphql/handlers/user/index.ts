@@ -1,6 +1,7 @@
-import { user, me } from "./queries.handler";
-// import {  } from "./mutations.handler";
+import { meMutation } from "./mutations.handler";
+import {user, meQuery} from "./queries.handler";
 
 export {
-    user, me
+    user, meQuery,
+    meMutation
 };
